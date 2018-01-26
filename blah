@@ -1,0 +1,15 @@
+!seen <nick>
+needs: join/leave/msg events; is also a command
+!tell <nick> <message>
+oodle!
+!timefor <nick>
+!timefor <nick> <timezone>
+title scraper
+!reminder <duration> <message>
+
+
+type seen struct {
+    nick string `arg:1`
+}
+
+command info struct
