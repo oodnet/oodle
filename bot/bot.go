@@ -6,6 +6,7 @@ import (
 
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/lrstanley/girc"
+	"github.com/sirupsen/logrus"
 )
 
 type Config struct {
@@ -17,32 +18,39 @@ type Config struct {
 
 type Bot struct {
 	triggers   []oodle.Trigger
-	commandmap map[string]oodle.Command
+	commandMap map[string]oodle.Command
 	sendQueue  chan string
 	client     *girc.Client
+	log        *logrus.Logger
 }
 
-func NewBot() *Bot {
+func NewBot(logger *logrus.Logger) *Bot {
 	return &Bot{
-		commandmap: make(map[string]oodle.Command),
+		log:        logger,
+		commandMap: make(map[string]oodle.Command),
 		sendQueue:  make(chan string, 200),
 	}
 }
 
+// Run runs the bot with a config
 func (bot *Bot) Run(config Config) error {
 	// TODO: refactor this
-	// Also use context
 	// girc lets you specify recovery function
 	client := girc.New(girc.Config{
-		Server: config.Server,
-		Port:   6667,
-		Nick:   config.Nick,
-		User:   config.Nick + "_user",
-		Name:   config.Nick + "_name",
-		// Debug:  os.Stdout,
+		Server:      config.Server,
+		Port:        6667,
+		Nick:        config.Nick,
+		User:        config.Nick + "_user",
+		Name:        config.Nick + "_name",
+		RecoverFunc: func(_ *girc.Client, e *girc.HandlerError) { bot.log.Errorln(e.Error()) },
 	})
-
 	client.Handlers.Add(girc.CONNECTED, func(c *girc.Client, e girc.Event) {
+		bot.log.WithFields(logrus.Fields{
+			"server":  config.Server,
+			"port":    config.Port,
+			"channel": config.Channel,
+			"nick":    client.GetNick(),
+		}).Info("Connected!")
 		c.Cmd.Join(config.Channel)
 	})
 
@@ -74,6 +82,11 @@ func (bot *Bot) Run(config Config) error {
 	return bot.client.Connect()
 }
 
+// Stop stops the bot in a graceful manner
+func (bot *Bot) Stop() {
+	bot.client.Close()
+}
+
 func (bot *Bot) sendLoop(client *girc.Client, channel string) {
 	for message := range bot.sendQueue {
 		for _, msg := range strings.Split(message, "\n") {
@@ -94,7 +107,7 @@ func (bot *Bot) handleCommand(nick string, message string) {
 	if len(args) < 1 {
 		return
 	}
-	command, ok := bot.commandmap[args[0]]
+	command, ok := bot.commandMap[args[0]]
 	if !ok {
 		return
 	}
@@ -116,5 +129,5 @@ func (bot *Bot) RegisterTrigger(trigger oodle.Trigger) {
 
 func (bot *Bot) RegisterCommand(command oodle.Command) {
 	cmdinfo := command.Info()
-	bot.commandmap[cmdinfo.Prefix+cmdinfo.Name] = command
+	bot.commandMap[cmdinfo.Prefix+cmdinfo.Name] = command
 }
