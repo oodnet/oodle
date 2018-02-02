@@ -1,7 +1,6 @@
 package bot
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/godwhoa/oodle/oodle"
@@ -34,8 +33,6 @@ func NewBot(logger *logrus.Logger) *Bot {
 
 // Run runs the bot with a config
 func (bot *Bot) Run(config *oodle.Config) error {
-	// TODO: refactor this
-	// girc lets you specify recovery function
 	client := girc.New(girc.Config{
 		Server:      config.Server,
 		Port:        config.Port,
@@ -44,6 +41,7 @@ func (bot *Bot) Run(config *oodle.Config) error {
 		Name:        config.Nick + "_name",
 		RecoverFunc: func(_ *girc.Client, e *girc.HandlerError) { bot.log.Errorln(e.Error()) },
 	})
+
 	client.Handlers.Add(girc.CONNECTED, func(c *girc.Client, e girc.Event) {
 		bot.log.WithFields(logrus.Fields{
 			"server":  config.Server,
@@ -96,7 +94,6 @@ func (bot *Bot) sendLoop(client *girc.Client, channel string) {
 }
 
 func (bot *Bot) sendEvent(event interface{}) {
-	fmt.Println(event)
 	for _, trigger := range bot.triggers {
 		trigger.OnEvent(event)
 	}
@@ -111,6 +108,7 @@ func (bot *Bot) handleCommand(nick string, message string) {
 	if !ok {
 		return
 	}
+
 	reply, err := command.Execute(nick, args[1:])
 	switch err {
 	case oodle.ErrUsage:
@@ -118,8 +116,14 @@ func (bot *Bot) handleCommand(nick string, message string) {
 	case nil:
 		bot.sendQueue <- reply
 	default:
-		fmt.Println(err)
+		bot.log.Error(err)
 	}
+
+	bot.log.WithFields(logrus.Fields{
+		"cmd":   args[0],
+		"reply": reply,
+		"err":   err,
+	}).Info("Command")
 }
 
 func (bot *Bot) RegisterTrigger(trigger oodle.Trigger) {

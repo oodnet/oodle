@@ -1,6 +1,6 @@
 package oodle
 
-// Simpified IRC events; they'll be sent thru eventboxes
+// Simpified IRC events
 type Message struct {
 	Nick string
 	Msg  string
