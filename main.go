@@ -11,6 +11,7 @@ import (
 func main() {
 	logger := logrus.New()
 	logger.Formatter = &logrus.TextFormatter{DisableColors: true}
+	logger.SetLevel(logrus.DebugLevel)
 
 	config := &oodle.Config{}
 	if _, err := toml.DecodeFile("config.toml", config); err != nil {

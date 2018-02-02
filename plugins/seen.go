@@ -14,7 +14,7 @@ type Seen struct {
 }
 
 func RegisterSeen(config *oodle.Config, bot oodle.Bot) {
-	seen := &Seen{}
+	seen := &Seen{store: make(map[string]time.Time)}
 	bot.RegisterCommand(seen)
 	bot.RegisterTrigger(seen)
 }
@@ -24,7 +24,7 @@ func (seen *Seen) Info() oodle.CommandInfo {
 		Prefix:      ".",
 		Name:        "seen",
 		Description: "Tells you when it last saw someone",
-		Usage:       "%s <nick>",
+		Usage:       ".seen <nick>",
 	}
 }
 

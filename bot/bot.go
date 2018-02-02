@@ -112,7 +112,7 @@ func (bot *Bot) handleCommand(nick string, message string) {
 	reply, err := command.Execute(nick, args[1:])
 	switch err {
 	case oodle.ErrUsage:
-		bot.sendQueue <- command.Info().Usage
+		bot.sendQueue <- "Usage: " + command.Info().Usage
 	case nil:
 		bot.sendQueue <- reply
 	default:
@@ -120,10 +120,11 @@ func (bot *Bot) handleCommand(nick string, message string) {
 	}
 
 	bot.log.WithFields(logrus.Fields{
-		"cmd":   args[0],
-		"reply": reply,
-		"err":   err,
-	}).Info("Command")
+		"cmd":    args[0],
+		"caller": nick,
+		"reply":  reply,
+		"err":    err,
+	}).Debug("CommandExec")
 }
 
 func (bot *Bot) RegisterTrigger(trigger oodle.Trigger) {
