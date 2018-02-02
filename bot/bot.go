@@ -38,7 +38,7 @@ func (bot *Bot) Run(config Config) error {
 	// girc lets you specify recovery function
 	client := girc.New(girc.Config{
 		Server:      config.Server,
-		Port:        6667,
+		Port:        config.Port,
 		Nick:        config.Nick,
 		User:        config.Nick + "_user",
 		Name:        config.Nick + "_name",
