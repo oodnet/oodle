@@ -12,12 +12,13 @@ func main() {
 	logger := logrus.New()
 	logger.Formatter = &logrus.TextFormatter{DisableColors: true}
 
-	oodleBot := bot.NewBot(logger)
-	plugins.RegisterEcho("oodle-dev", oodleBot)
-
 	config := &oodle.Config{}
 	if _, err := toml.DecodeFile("config.toml", config); err != nil {
 		logger.Fatal(err)
 	}
+
+	oodleBot := bot.NewBot(logger)
+	plugins.RegisterEcho(config, oodleBot)
+
 	logger.Fatal(oodleBot.Run(config))
 }

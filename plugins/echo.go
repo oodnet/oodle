@@ -11,8 +11,8 @@ type Echo struct {
 	oodle.BaseTrigger
 }
 
-func RegisterEcho(nick string, bot oodle.Bot) {
-	echo := &Echo{nick: nick}
+func RegisterEcho(config *oodle.Config, bot oodle.Bot) {
+	echo := &Echo{nick: config.Nick}
 	bot.RegisterCommand(echo)
 	bot.RegisterTrigger(echo)
 }
