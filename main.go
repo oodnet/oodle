@@ -18,7 +18,9 @@ func main() {
 	}
 
 	oodleBot := bot.NewBot(logger)
+	// TODO: better way of registering plugins
 	plugins.RegisterEcho(config, oodleBot)
+	plugins.RegisterSeen(config, oodleBot)
 
 	logger.Fatal(oodleBot.Run(config))
 }
