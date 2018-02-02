@@ -1,3 +1,8 @@
 language: go
 go:
   - 1.9
+addons:
+  artifacts:
+    working_dir: oodle_linux
+script:
+  - CGO_ENABLED=0 GOOS=linux go build -o oodle_linux -a -tags netgo -ldflags '-w'
