@@ -76,11 +76,13 @@ func (bot *Bot) Run(config *oodle.Config) error {
 	go bot.sendLoop(client, config.Channel)
 
 	bot.client = client
-	if err, ok := client.Connect().(*girc.ErrInvalidConfig); ok {
+	err := client.Connect()
+	if _, ok := err.(*girc.ErrInvalidConfig); ok || !config.Retry {
 		return err
 	}
 	return backoff.RetryNotify(client.Connect, backoff.NewExponentialBackOff(), func(err error, dur time.Duration) {
-		bot.log.Warnf("Connection failed with err: %s\n Retrying in %s", err.Error(), dur.String())
+		bot.log.Warnf("Connection failed with err: %s", err)
+		bot.log.Warnf("Retrying in %s", dur)
 	})
 }
 
