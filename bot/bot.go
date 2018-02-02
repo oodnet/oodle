@@ -2,7 +2,9 @@ package bot
 
 import (
 	"strings"
+	"time"
 
+	"github.com/cenkalti/backoff"
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/lrstanley/girc"
 	"github.com/sirupsen/logrus"
@@ -81,7 +83,12 @@ func (bot *Bot) Run(config *oodle.Config) error {
 	go bot.sendLoop(client, config.Channel)
 
 	bot.client = client
-	return bot.client.Connect()
+	if err, ok := client.Connect().(*girc.ErrInvalidConfig); ok {
+		return err
+	}
+	return backoff.RetryNotify(client.Connect, backoff.NewExponentialBackOff(), func(err error, dur time.Duration) {
+		bot.log.Warnf("Connection failed with err: %s\n Retrying in %s", err.Error(), dur.String())
+	})
 }
 
 // Stop stops the bot in a graceful manner
