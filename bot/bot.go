@@ -33,14 +33,18 @@ func NewBot(logger *logrus.Logger) *Bot {
 
 // Run runs the bot with a config
 func (bot *Bot) Run(config *oodle.Config) error {
-	client := girc.New(girc.Config{
+	gircConf := girc.Config{
 		Server:      config.Server,
 		Port:        config.Port,
 		Nick:        config.Nick,
 		User:        config.Nick + "_user",
 		Name:        config.Nick + "_name",
 		RecoverFunc: func(_ *girc.Client, e *girc.HandlerError) { bot.log.Errorln(e.Error()) },
-	})
+	}
+	if config.SASLUser != "" && config.SASLPass != "" {
+		gircConf.SASL = &girc.SASLPlain{User: config.SASLUser, Pass: config.SASLPass}
+	}
+	client := girc.New(gircConf)
 
 	client.Handlers.Add(girc.CONNECTED, func(c *girc.Client, e girc.Event) {
 		bot.log.WithFields(logrus.Fields{
