@@ -10,13 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Config struct {
-	Nick    string
-	Server  string
-	Port    int
-	Channel string
-}
-
 type Bot struct {
 	triggers   []oodle.Trigger
 	commandMap map[string]oodle.Command
