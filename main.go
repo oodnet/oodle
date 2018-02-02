@@ -1,7 +1,9 @@
 package main
 
 import (
+	"github.com/BurntSushi/toml"
 	"github.com/godwhoa/oodle/bot"
+	"github.com/godwhoa/oodle/oodle"
 	"github.com/godwhoa/oodle/plugins"
 	"github.com/sirupsen/logrus"
 )
@@ -9,13 +11,13 @@ import (
 func main() {
 	logger := logrus.New()
 	logger.Formatter = &logrus.TextFormatter{DisableColors: true}
-	oodle_bot := bot.NewBot(logger)
-	plugins.RegisterEcho("oodle-dev", oodle_bot)
-	err := oodle_bot.Run(bot.Config{
-		Nick:    "oodle-dev",
-		Server:  "chat.freenode.net",
-		Port:    6697,
-		Channel: "##oodle-test",
-	})
-	logger.Fatal(err)
+
+	oodleBot := bot.NewBot(logger)
+	plugins.RegisterEcho("oodle-dev", oodleBot)
+
+	config := &oodle.Config{}
+	if _, err := toml.DecodeFile("config.toml", config); err != nil {
+		logger.Fatal(err)
+	}
+	logger.Fatal(oodleBot.Run(config))
 }

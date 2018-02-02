@@ -1,0 +1,9 @@
+nick = "oodle-devvvv"
+name = "oodle-dev"
+user = "oodle-dev"
+sasl_user = ""
+sasl_pass = ""
+server = "chat.freenode.net"
+port = 6667
+channel = "##oodle-test"
+retry = true

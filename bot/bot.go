@@ -33,7 +33,7 @@ func NewBot(logger *logrus.Logger) *Bot {
 }
 
 // Run runs the bot with a config
-func (bot *Bot) Run(config Config) error {
+func (bot *Bot) Run(config *oodle.Config) error {
 	// TODO: refactor this
 	// girc lets you specify recovery function
 	client := girc.New(girc.Config{
