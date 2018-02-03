@@ -7,16 +7,20 @@ import (
 	"github.com/godwhoa/oodle/plugins"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	flag "github.com/ogier/pflag"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
+	confpath := *flag.StringP("config", "c", "config.toml", "Specifies which configfile to use")
+	flag.Parse()
+
 	logger := logrus.New()
 	logger.Formatter = &logrus.TextFormatter{DisableColors: true}
 	logger.SetLevel(logrus.DebugLevel)
 
 	config := &oodle.Config{}
-	if _, err := toml.DecodeFile("config.toml", config); err != nil {
+	if _, err := toml.DecodeFile(confpath, config); err != nil {
 		logger.Fatal(err)
 	}
 
