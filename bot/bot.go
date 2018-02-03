@@ -73,6 +73,7 @@ func (bot *Bot) Run(config *oodle.Config) error {
 		}
 	})
 
+	bot.log.Info("Connecting...")
 	go bot.sendLoop(client, config.Channel)
 
 	bot.client = client
