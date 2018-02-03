@@ -5,13 +5,13 @@
 > **oodle** is a simple irc bot for oodnet. It is also a rewrite of ezbot framework 
 
 ## Timeline
-[x] Base framework<br>
-[x] Config. and logging<br>
-[x] Make it robust (reconnect and recovery)<br>
-[x] Core commands<br>
-[ ] oodnet integration<br>
-[ ] More polish (.help <command> etc.)<br>
-[ ] Simplify design if possible<br>
+- [x] Base framework<br>
+- [x] Config. and logging<br>
+- [x] Make it robust (reconnect and recovery)<br>
+- [x] Core commands<br>
+- [ ] oodnet integration<br>
+- [ ] More polish (.help <command> etc.)<br>
+- [ ] Simplify design if possible<br>
 
 ## Usage
 ```bash
