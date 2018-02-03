@@ -1,3 +1,4 @@
+# IRC
 nick = "oodle-devvvv"
 name = "oodle-dev"
 user = "oodle-dev"
@@ -6,4 +7,8 @@ sasl_pass = ""
 server = "chat.freenode.net"
 port = 6667
 channel = "##oodle-test"
+# Retry if connection drops; has exp. backoff
 retry = true
+# Where to store sqlite file
+dbpath = ""
+# 
