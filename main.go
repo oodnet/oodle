@@ -24,7 +24,7 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	db, err := gorm.Open("sqlite3", "store.sqlite")
+	db, err := gorm.Open("sqlite3", config.DBPath)
 	if err != nil {
 		logger.Fatal(err)
 	}

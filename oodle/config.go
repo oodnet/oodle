@@ -8,4 +8,5 @@ type Config struct {
 	Retry    bool   `toml:"retry"`
 	SASLUser string `toml:"sasl_user"`
 	SASLPass string `toml:"sasl_pass"`
+	DBPath   string `toml:"dbpath"`
 }
