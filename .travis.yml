@@ -2,12 +2,16 @@ language: go
 go:
   - 1.9
 script:
-  - CGO_ENABLED=0 GOOS=linux go build -o oodle_linux -a -tags netgo -ldflags '-w'
+  - GOOS=linux go build -o oodle_linux_dyn -a -tags netgo -ldflags '-w'
+  - GOOS=linux go build -o oodle_linux_static -a -tags netgo -ldflags '-extldflags "-static"'
 deploy:
   provider: releases
   api_key:
     secure: "UjxJ+1yfeJc0wUx7jGLdLKBj/O73FKqaB8B4zuk722H0iODkPMsXpaYBOg4hPq8xgqQd/p//ejacsl9VoDkp74EhLdPRQ9C5XJ8RFqtPdSrTLH7Q2K5ODbI3T82gfGd8+xPg89oknUbCKdXjzM60zq4P/T2XRlunSsYnQJkgAoTSHsoooCYcifIqlDK/eOdLSJ0Nsny+pF+qc1AsKwck5C91ta4baituQ9bV+7K3gRFx9i4yaM+3dpUxSngBLi62J1BhnwpDTVcBXCS+hYd/US8m5+ab2lSzZijO/i9mNCSfnvC+2aFrGinjNGF4duCiokFfc14zW088HD0gksbq380QhWYdZW7+8lnb3sQBsee7HV7v/BI8J5sGgQQlQXBH1unQhpdcUJ5ni2kgZl52EUzv51mV0y2qIAFya+4253XsT3cu7NQHV9tGtLlkUdeTe42iS5V7HwCgnvOkxE3f8+5m+DIEz74961U33V+yWdt3+X7/NFDU5K8b0j59tYJFjTTH5tuTJsZKN2hcUjWpZqjo4OLXYBPyeMKVtX9xzKn8o9zhdNEeTndlGxURKiQJC1DJfYyAO/uuXe6w+8x0UCiDAiuZ8yUgsTZS11wmTPJRK8jmEq//kwGg9McDhof4L9fgyL5CFFy25e3S2IOc3c6xQzUXRwpj+Fw7UdDYE5c="
-  file: "oodle_linux"
+  file:
+    - "config.toml"
+    - "oodle_linux_dyn"
+    - "oodle_linux_static"
   skip_cleanup: true
   on:
     tags: true
