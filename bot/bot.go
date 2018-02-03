@@ -38,8 +38,8 @@ func (bot *Bot) Start() error {
 		Server:      bot.config.Server,
 		Port:        bot.config.Port,
 		Nick:        bot.config.Nick,
-		User:        bot.config.Nick + "_user",
-		Name:        bot.config.Nick + "_name",
+		User:        bot.config.User,
+		Name:        bot.config.Name,
 		RecoverFunc: func(_ *girc.Client, e *girc.HandlerError) { bot.log.Errorln(e.Error()) },
 	}
 	if bot.config.SASLUser != "" && bot.config.SASLPass != "" {

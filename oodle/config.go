@@ -2,6 +2,8 @@ package oodle
 
 type Config struct {
 	Nick     string `toml:"nick"`
+	Name     string `toml:"name"`
+	User     string `toml:"user"`
 	Server   string `toml:"server"`
 	Port     int    `toml:"port"`
 	Channel  string `toml:"channel"`
