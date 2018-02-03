@@ -26,12 +26,12 @@ func main() {
 	}
 	defer db.Close()
 
-	oodleBot := bot.NewBot(logger)
-	// TODO: better way of registering plugins
-	plugins.RegisterEcho(config, oodleBot)
-	plugins.RegisterSeen(config, oodleBot)
-	// TODO: possible persistable interface
-	plugins.RegisterTell(config, db, oodleBot)
-
-	logger.Fatal(oodleBot.Run(config))
+	oodleBot := bot.NewBot(logger, config, db)
+	oodleBot.Register(
+		&plugins.Seen{},
+		&plugins.Tell{},
+		&plugins.Echo{Nick: config.Nick},
+		&plugins.Title{},
+	)
+	logger.Fatal(oodleBot.Start())
 }

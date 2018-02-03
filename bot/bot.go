@@ -6,6 +6,7 @@ import (
 
 	"github.com/cenkalti/backoff"
 	"github.com/godwhoa/oodle/oodle"
+	"github.com/jinzhu/gorm"
 	"github.com/lrstanley/girc"
 	"github.com/sirupsen/logrus"
 )
@@ -16,45 +17,50 @@ type Bot struct {
 	sendQueue  chan string
 	client     *girc.Client
 	log        *logrus.Logger
+	config     *oodle.Config
+	db         *gorm.DB
 }
 
-func NewBot(logger *logrus.Logger) *Bot {
+func NewBot(logger *logrus.Logger, config *oodle.Config, db *gorm.DB) *Bot {
 	return &Bot{
 		log:        logger,
+		config:     config,
+		db:         db,
 		commandMap: make(map[string]oodle.Command),
 		sendQueue:  make(chan string, 200),
 	}
 }
 
-// Run runs the bot with a config
-func (bot *Bot) Run(config *oodle.Config) error {
+// Start makes a conn., stats a readloop and uses the config
+// FIXME: bot.config is ugly, find a better way
+func (bot *Bot) Start() error {
 	gircConf := girc.Config{
-		Server:      config.Server,
-		Port:        config.Port,
-		Nick:        config.Nick,
-		User:        config.Nick + "_user",
-		Name:        config.Nick + "_name",
+		Server:      bot.config.Server,
+		Port:        bot.config.Port,
+		Nick:        bot.config.Nick,
+		User:        bot.config.Nick + "_user",
+		Name:        bot.config.Nick + "_name",
 		RecoverFunc: func(_ *girc.Client, e *girc.HandlerError) { bot.log.Errorln(e.Error()) },
 	}
-	if config.SASLUser != "" && config.SASLPass != "" {
-		gircConf.SASL = &girc.SASLPlain{User: config.SASLUser, Pass: config.SASLPass}
+	if bot.config.SASLUser != "" && bot.config.SASLPass != "" {
+		gircConf.SASL = &girc.SASLPlain{User: bot.config.SASLUser, Pass: bot.config.SASLPass}
 	}
 	client := girc.New(gircConf)
 
 	client.Handlers.Add(girc.CONNECTED, func(c *girc.Client, e girc.Event) {
 		bot.log.WithFields(logrus.Fields{
-			"server":  config.Server,
-			"port":    config.Port,
-			"channel": config.Channel,
+			"server":  bot.config.Server,
+			"port":    bot.config.Port,
+			"channel": bot.config.Channel,
 			"nick":    client.GetNick(),
 		}).Info("Connected!")
-		c.Cmd.Join(config.Channel)
+		c.Cmd.Join(bot.config.Channel)
 	})
 
 	// Channel trigger
 	client.Handlers.Add(girc.JOIN, func(c *girc.Client, e girc.Event) {
 		nick := e.Source.Name
-		if nick != config.Nick {
+		if nick != bot.config.Nick {
 			bot.sendEvent(oodle.Join{Nick: nick})
 		}
 	})
@@ -67,18 +73,18 @@ func (bot *Bot) Run(config *oodle.Config) error {
 	client.Handlers.Add(girc.PRIVMSG, func(c *girc.Client, e girc.Event) {
 		nick := e.Source.Name
 		msg := e.Trailing
-		if nick != config.Nick {
+		if nick != bot.config.Nick {
 			bot.handleCommand(nick, msg)
 			bot.sendEvent(oodle.Message{Nick: nick, Msg: msg})
 		}
 	})
 
 	bot.log.Info("Connecting...")
-	go bot.sendLoop(client, config.Channel)
+	go bot.sendLoop(client, bot.config.Channel)
 
 	bot.client = client
 	err := client.Connect()
-	if _, ok := err.(*girc.ErrInvalidConfig); ok || !config.Retry {
+	if _, ok := err.(*girc.ErrInvalidConfig); ok || !bot.config.Retry {
 		return err
 	}
 	return backoff.RetryNotify(client.Connect, backoff.NewExponentialBackOff(), func(err error, dur time.Duration) {
@@ -142,4 +148,18 @@ func (bot *Bot) RegisterTrigger(trigger oodle.Trigger) {
 func (bot *Bot) RegisterCommand(command oodle.Command) {
 	cmdinfo := command.Info()
 	bot.commandMap[cmdinfo.Prefix+cmdinfo.Name] = command
+}
+
+func (bot *Bot) Register(plugins ...interface{}) {
+	for _, plugin := range plugins {
+		if command, ok := plugin.(oodle.Command); ok {
+			bot.RegisterCommand(command)
+		}
+		if trigger, ok := plugin.(oodle.Trigger); ok {
+			bot.RegisterTrigger(trigger)
+		}
+		if stateful, ok := plugin.(oodle.Stateful); ok {
+			stateful.Init(bot.config, bot.db)
+		}
+	}
 }

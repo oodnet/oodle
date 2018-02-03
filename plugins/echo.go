@@ -5,21 +5,16 @@ import (
 )
 
 type Echo struct {
-	nick string
+	Nick string
 	oodle.BaseTrigger
-}
-
-func RegisterEcho(config *oodle.Config, bot oodle.Bot) {
-	echo := &Echo{nick: config.Nick}
-	bot.RegisterCommand(echo)
 }
 
 func (echo *Echo) Info() oodle.CommandInfo {
 	return oodle.CommandInfo{
 		Prefix:      "",
-		Name:        echo.nick + "!",
+		Name:        echo.Nick + "!",
 		Description: "Exlamates your nick back!",
-		Usage:       echo.nick + "!",
+		Usage:       echo.Nick + "!",
 	}
 }
 

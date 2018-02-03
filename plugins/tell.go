@@ -26,13 +26,6 @@ type Tell struct {
 	oodle.BaseTrigger
 }
 
-func RegisterTell(config *oodle.Config, db *gorm.DB, bot oodle.Bot) {
-	db.AutoMigrate(&Letter{})
-	tell := &Tell{db: db, has: make(map[string]bool)}
-	bot.RegisterCommand(tell)
-	bot.RegisterTrigger(tell)
-}
-
 func (tell *Tell) notify(nick string) {
 	if c, ok := tell.has[nick]; ok && !c {
 		return
@@ -45,6 +38,12 @@ func (tell *Tell) notify(nick string) {
 		tell.db.Delete(&l)
 	}
 	tell.has[nick] = false
+}
+
+func (tell *Tell) Init(config *oodle.Config, db *gorm.DB) {
+	db.AutoMigrate(&Letter{})
+	tell.db = db
+	tell.has = make(map[string]bool)
 }
 
 func (tell *Tell) Info() oodle.CommandInfo {

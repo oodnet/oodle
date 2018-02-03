@@ -1,6 +1,10 @@
 package oodle
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/jinzhu/gorm"
+)
 
 var ErrUsage = errors.New("Wrong command usage")
 
@@ -22,6 +26,10 @@ type Command interface {
 type Trigger interface {
 	SetSendQueue(sendqueue chan string)
 	OnEvent(event interface{})
+}
+
+type Stateful interface {
+	Init(config *Config, db *gorm.DB)
 }
 
 type Bot interface {

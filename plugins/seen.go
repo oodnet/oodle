@@ -6,6 +6,7 @@ import (
 
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/hako/durafmt"
+	"github.com/jinzhu/gorm"
 )
 
 type Seen struct {
@@ -13,10 +14,8 @@ type Seen struct {
 	oodle.BaseTrigger
 }
 
-func RegisterSeen(config *oodle.Config, bot oodle.Bot) {
-	seen := &Seen{store: make(map[string]time.Time)}
-	bot.RegisterCommand(seen)
-	bot.RegisterTrigger(seen)
+func (seen *Seen) Init(config *oodle.Config, db *gorm.DB) {
+	seen.store = make(map[string]time.Time)
 }
 
 func (seen *Seen) Info() oodle.CommandInfo {
