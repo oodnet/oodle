@@ -10,4 +10,4 @@ channel = "##oodle-test"
 # Retry if connection drops; has exp. backoff
 retry = true
 # Where to store sqlite file
-dbpath = "store.toml"
+dbpath = "store.sqlite"
