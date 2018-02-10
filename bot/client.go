@@ -86,10 +86,10 @@ func (irc *IRCClient) onConnect(c *girc.Client, e girc.Event) {
 
 // Simplifies and sends the events
 func (irc *IRCClient) onAll(c *girc.Client, e girc.Event) {
-	nick, msg := e.Source.Name, e.Trailing
-	if nick == irc.Nick {
+	if e.Source == nil || e.Source.Name == irc.Nick {
 		return
 	}
+	nick, msg := e.Source.Name, e.Trailing
 	switch e.Command {
 	case girc.JOIN:
 		irc.sendEvent(oodle.Join{Nick: nick})
