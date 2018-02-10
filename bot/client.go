@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff"
@@ -91,6 +92,8 @@ func (irc *IRCClient) OnEvent(callback func(event interface{})) {
 	irc.callbacks = append(irc.callbacks, callback)
 }
 
-func (irc *IRCClient) Send(msg string) {
-	irc.client.Cmd.Message(irc.Channel, msg)
+func (irc *IRCClient) Send(message string) {
+	for _, msg := range strings.Split(message, "\n") {
+		irc.client.Cmd.Message(irc.Channel, msg)
+	}
 }
