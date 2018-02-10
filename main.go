@@ -30,7 +30,9 @@ func main() {
 	}
 	defer db.Close()
 
-	oodleBot := bot.NewBot(logger, config, db)
+	ircClient := bot.NewIRCClient(logger, config)
+
+	oodleBot := bot.NewBot(logger, config, ircClient, db)
 	oodleBot.Register(
 		&plugins.Seen{},
 		&plugins.Tell{},
