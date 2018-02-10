@@ -1,6 +1,10 @@
 language: go
 go:
   - 1.9
+before_install:
+  - go get -v -u github.com/golang/dep
+install:
+  - dep ensure
 script:
   - GOOS=linux go build -o oodle_linux_dyn -a -tags netgo -ldflags '-w'
   - GOOS=linux go build -o oodle_linux_static -a -tags netgo -ldflags '-extldflags "-static"'
