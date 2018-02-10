@@ -22,14 +22,14 @@ type Tell struct {
 	db *gorm.DB
 	// cache for checking if a user has mail
 	// to avoid querying for every msg.
-	has map[string]bool
+	// has map[string]bool
 	oodle.BaseTrigger
 }
 
 func (tell *Tell) notify(nick string) {
-	if c, ok := tell.has[nick]; ok && !c {
-		return
-	}
+	// if c, ok := tell.has[nick]; ok && !c {
+	// 	return
+	// }
 	var letters []Letter
 	tell.db.Where("`to` = ?", nick).Find(&letters)
 	for _, l := range letters {
@@ -37,13 +37,13 @@ func (tell *Tell) notify(nick string) {
 		tell.SendQueue <- fmt.Sprintf("%s, %s left this message for you: %s\n%s ago", nick, l.From, l.Body, durafmt.Parse(timeSince).String())
 		tell.db.Delete(&l)
 	}
-	tell.has[nick] = false
+	// tell.has[nick] = false
 }
 
 func (tell *Tell) Init(config *oodle.Config, db *gorm.DB) {
 	db.AutoMigrate(&Letter{})
 	tell.db = db
-	tell.has = make(map[string]bool)
+	// tell.has = make(map[string]bool)
 }
 
 func (tell *Tell) Info() oodle.CommandInfo {
@@ -72,6 +72,6 @@ func (tell *Tell) Execute(nick string, args []string) (string, error) {
 		When: time.Now(),
 	}
 	tell.db.Create(l)
-	tell.has[nick] = true
+	// tell.has[nick] = true
 	return "okie dokie!", nil
 }
