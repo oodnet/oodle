@@ -15,13 +15,15 @@ type Bot struct {
 	sendQueue  chan string
 	client     *girc.Client
 	log        *logrus.Logger
+	config     *oodle.Config
 	ircClient  *IRCClient
 	db         *gorm.DB
 }
 
-func NewBot(logger *logrus.Logger, ircClient *IRCClient, db *gorm.DB) *Bot {
+func NewBot(logger *logrus.Logger, config *oodle.Config, ircClient *IRCClient, db *gorm.DB) *Bot {
 	return &Bot{
 		log:        logger,
+		config:     config,
 		ircClient:  ircClient,
 		db:         db,
 		commandMap: make(map[string]oodle.Command),
@@ -107,9 +109,8 @@ func (bot *Bot) Register(plugins ...interface{}) {
 		if trigger, ok := plugin.(oodle.Trigger); ok {
 			bot.RegisterTrigger(trigger)
 		}
-		// FIXME
-		// if stateful, ok := plugin.(oodle.Stateful); ok {
-		// 	stateful.Init(bot.config, bot.db)
-		// }
+		if stateful, ok := plugin.(oodle.Stateful); ok {
+			stateful.Init(bot.config, bot.db)
+		}
 	}
 }

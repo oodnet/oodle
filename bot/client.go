@@ -11,20 +11,34 @@ import (
 )
 
 type IRCClient struct {
-	Server   string `toml:"server"`
-	Password string `toml:"password"`
-	Port     int    `toml:"port"`
-	Channel  string `toml:"channel"`
-	Nick     string `toml:"nick"`
-	Name     string `toml:"name"`
-	User     string `toml:"user"`
-	SASLUser string `toml:"sasl_user"`
-	SASLPass string `toml:"sasl_pass"`
-	Retry    bool   `toml:"retry"`
+	Server   string
+	Port     int
+	Channel  string
+	Nick     string
+	Name     string
+	User     string
+	SASLUser string
+	SASLPass string
+	Retry    bool
 
 	callbacks []func(event interface{})
 	client    *girc.Client
 	log       *logrus.Logger
+}
+
+func NewIRCClient(log *logrus.Logger, conf *oodle.Config) *IRCClient {
+	return &IRCClient{
+		Server:   conf.Server,
+		Port:     conf.Port,
+		Channel:  conf.Channel,
+		Nick:     conf.Nick,
+		Name:     conf.Name,
+		User:     conf.User,
+		SASLUser: conf.SASLUser,
+		SASLPass: conf.SASLPass,
+		Retry:    conf.Retry,
+		log:      log,
+	}
 }
 
 func (irc *IRCClient) Connect() error {
@@ -39,10 +53,12 @@ func (irc *IRCClient) Connect() error {
 	if irc.SASLUser != "" && irc.SASLPass != "" {
 		gircConf.SASL = &girc.SASLPlain{User: irc.SASLUser, Pass: irc.SASLPass}
 	}
+
 	client := girc.New(gircConf)
 	client.Handlers.Add(girc.ALL_EVENTS, irc.onAll)
 	client.Handlers.Add(girc.CONNECTED, irc.onConnect)
 	irc.client = client
+
 	err := client.Connect()
 	if _, ok := err.(*girc.ErrInvalidConfig); ok || !irc.Retry {
 		return err
@@ -53,6 +69,7 @@ func (irc *IRCClient) Connect() error {
 	})
 }
 
+// Close closes the connection
 func (irc *IRCClient) Close() {
 	irc.client.Close()
 }
@@ -67,6 +84,7 @@ func (irc *IRCClient) onConnect(c *girc.Client, e girc.Event) {
 	c.Cmd.Join(irc.Channel)
 }
 
+// Simplifies and sends the events
 func (irc *IRCClient) onAll(c *girc.Client, e girc.Event) {
 	nick, msg := e.Source.Name, e.Trailing
 	if nick == irc.Nick {
@@ -82,16 +100,19 @@ func (irc *IRCClient) onAll(c *girc.Client, e girc.Event) {
 	}
 }
 
+// Sends and event to all callbacks
 func (irc *IRCClient) sendEvent(event interface{}) {
 	for _, callback := range irc.callbacks {
 		callback(event)
 	}
 }
 
+// OnEvent registers a callback
 func (irc *IRCClient) OnEvent(callback func(event interface{})) {
 	irc.callbacks = append(irc.callbacks, callback)
 }
 
+// Send sends an msg to the configured channel
 func (irc *IRCClient) Send(message string) {
 	for _, msg := range strings.Split(message, "\n") {
 		irc.client.Cmd.Message(irc.Channel, msg)
