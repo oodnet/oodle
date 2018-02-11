@@ -22,28 +22,35 @@ type Tell struct {
 	db *gorm.DB
 	// cache for checking if a user has mail
 	// to avoid querying for every msg.
-	// has map[string]bool
+	lcount map[string]int
 	oodle.BaseTrigger
 }
 
 func (tell *Tell) notify(nick string) {
-	// if c, ok := tell.has[nick]; ok && !c {
-	// 	return
-	// }
+	if c, ok := tell.lcount[nick]; !ok || c < 1 {
+		return
+	}
 	var letters []Letter
 	tell.db.Where("`to` = ?", nick).Find(&letters)
 	for _, l := range letters {
 		timeSince := time.Since(l.When)
 		tell.SendQueue <- fmt.Sprintf("%s, %s left this message for you: %s\n%s ago", nick, l.From, l.Body, durafmt.Parse(timeSince).String())
 		tell.db.Delete(&l)
+		tell.lcount[nick]--
 	}
-	// tell.has[nick] = false
 }
 
 func (tell *Tell) Init(config *oodle.Config, db *gorm.DB) {
 	db.AutoMigrate(&Letter{})
 	tell.db = db
-	// tell.has = make(map[string]bool)
+	tell.lcount = make(map[string]int)
+
+	// update cache
+	var letters []Letter
+	db.Select("`to`").Find(&letters)
+	for _, l := range letters {
+		tell.lcount[l.To]++
+	}
 }
 
 func (tell *Tell) Info() oodle.CommandInfo {
@@ -51,7 +58,7 @@ func (tell *Tell) Info() oodle.CommandInfo {
 		Prefix:      ".",
 		Name:        "tell",
 		Description: "Lets you send a msg. to an inactive user.\nIt will notify them once they are active.",
-		Usage:       ".",
+		Usage:       ".tell <to> <msg>",
 	}
 }
 
@@ -72,6 +79,6 @@ func (tell *Tell) Execute(nick string, args []string) (string, error) {
 		When: time.Now(),
 	}
 	tell.db.Create(l)
-	// tell.has[nick] = true
+	tell.lcount[args[0]]++
 	return "okie dokie!", nil
 }
