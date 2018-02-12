@@ -86,7 +86,7 @@ func (irc *IRCClient) onConnect(c *girc.Client, e girc.Event) {
 
 // Simplifies and sends the events
 func (irc *IRCClient) onAll(c *girc.Client, e girc.Event) {
-	if e.Source == nil || e.Source.Name == irc.Nick {
+	if e.IsFromUser() || e.Source == nil || e.Source.Name == irc.Nick {
 		return
 	}
 	nick, msg := e.Source.Name, e.Trailing
