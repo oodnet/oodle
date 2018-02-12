@@ -31,6 +31,7 @@ func main() {
 	defer db.Close()
 
 	ircClient := bot.NewIRCClient(logger, config)
+	webhook := NewWebHook(ircClient, logger, config.Secret)
 
 	oodleBot := bot.NewBot(logger, config, ircClient, db)
 	oodleBot.Register(
@@ -39,5 +40,7 @@ func main() {
 		&plugins.Echo{Nick: config.Nick},
 		&plugins.Title{},
 	)
+
+	go webhook.Listen(config.WebHookAddr)
 	logger.Fatal(oodleBot.Start())
 }
