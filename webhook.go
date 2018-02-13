@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html"
 	"net/http"
 
 	"github.com/godwhoa/oodle/bot"
@@ -40,7 +41,7 @@ func (webhook *WebHook) NewThread(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Malformed JSON", 400)
 		return
 	}
-	webhook.irc.Send(fmt.Sprintf(`oods.net> %s started thread "%s"`, t.User, t.Title))
+	webhook.irc.Send(fmt.Sprintf(`oods.net: %s started thread "%s"`, t.User, html.UnescapeString(t.Title)))
 	webhook.irc.Send(t.Permalink)
 	w.Write([]byte(`OK`))
 }
