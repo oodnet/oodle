@@ -6,7 +6,8 @@ before_install:
 install:
   - dep ensure
 script:
-  - GOOS=linux go build -o oodle_linux_static -a -tags netgo -ldflags '-extldflags "-static"'
+  - GOOS=linux go build -o oodle_linux -a -tags netgo -ldflags '-extldflags "-static"'
+  - GOOS=linux GOARCH=arm GOARM=7 go build -o oodle_linux_armv7 -a -tags netgo -ldflags '-extldflags "-static"'
 deploy:
   provider: releases
   api_key:
