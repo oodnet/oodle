@@ -2,12 +2,13 @@ language: go
 go:
   - 1.9
 before_install:
+  - sudo apt-get install gcc-4.8-arm-linux-gnueabihf
   - go get -u github.com/golang/dep/cmd/dep
 install:
   - dep ensure
 script:
   - GOOS=linux go build -o oodle_linux -a -tags netgo -ldflags '-extldflags "-static"'
-  - GOOS=linux GOARCH=arm GOARM=7 go build -o oodle_linux_armv7 -a -tags netgo -ldflags '-extldflags "-static"'
+  - GOOS=linux GOARCH=arm GOARM=7 CC=arm-linux-gnueabihf-gcc-4.8 CGO_ENABLED=1 go build -o oodle_linux_armv7 -a -tags netgo -ldflags "-linkmode external -extldflags -static"
 deploy:
   provider: releases
   api_key:
