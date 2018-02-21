@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"html"
 	"net/http"
 
 	"github.com/godwhoa/oodle/bot"
+	"github.com/lrstanley/girc"
 	"github.com/sirupsen/logrus"
 )
 
@@ -34,7 +36,7 @@ func (webhook *WebHook) Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, msg := range msgs {
-		webhook.irc.Send(msg)
+		webhook.irc.Send(girc.Fmt(html.UnescapeString(msg)))
 	}
 	w.Write([]byte(`OK`))
 }
