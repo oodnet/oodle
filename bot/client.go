@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -114,6 +115,12 @@ func (irc *IRCClient) OnEvent(callback func(event interface{})) {
 
 // Send sends an msg to the configured channel
 func (irc *IRCClient) Send(message string) {
+	irc.client.Cmd.Message(irc.Channel, message)
+}
+
+// Sendf works like printf but for irc msgs.
+func (irc *IRCClient) Sendf(format string, a ...interface{}) {
+	message := fmt.Sprintf(format, a...)
 	for _, msg := range strings.Split(message, "\n") {
 		irc.client.Cmd.Message(irc.Channel, msg)
 	}

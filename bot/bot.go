@@ -12,7 +12,6 @@ import (
 type Bot struct {
 	triggers   []oodle.Trigger
 	commandMap map[string]oodle.Command
-	sendQueue  chan string
 	client     *girc.Client
 	log        *logrus.Logger
 	config     *oodle.Config
@@ -27,14 +26,12 @@ func NewBot(logger *logrus.Logger, config *oodle.Config, ircClient *IRCClient, d
 		ircClient:  ircClient,
 		db:         db,
 		commandMap: make(map[string]oodle.Command),
-		sendQueue:  make(chan string, 200),
 	}
 }
 
 // Start makes a conn., stats a readloop and uses the config
 func (bot *Bot) Start() error {
 	bot.log.Info("Connecting...")
-	go bot.sendLoop()
 	bot.ircClient.OnEvent(func(event interface{}) {
 		if msg, ok := event.(oodle.Message); ok {
 			bot.handleCommand(msg.Nick, msg.Msg)
@@ -47,14 +44,6 @@ func (bot *Bot) Start() error {
 // Stop stops the bot in a graceful manner
 func (bot *Bot) Stop() {
 	bot.ircClient.Close()
-}
-
-// probably remove this in future
-// keeping it for now to avoid plugin re-write
-func (bot *Bot) sendLoop() {
-	for message := range bot.sendQueue {
-		bot.ircClient.Send(message)
-	}
 }
 
 func (bot *Bot) relayTrigger(event interface{}) {
@@ -76,9 +65,9 @@ func (bot *Bot) handleCommand(nick string, message string) {
 	reply, err := command.Execute(nick, args[1:])
 	switch err {
 	case oodle.ErrUsage:
-		bot.sendQueue <- "Usage: " + command.Info().Usage
+		bot.ircClient.Sendf("Usage: " + command.Info().Usage)
 	case nil:
-		bot.sendQueue <- reply
+		bot.ircClient.Send(reply)
 	default:
 		bot.log.Error(err)
 	}
@@ -93,7 +82,7 @@ func (bot *Bot) handleCommand(nick string, message string) {
 
 func (bot *Bot) RegisterTrigger(trigger oodle.Trigger) {
 	bot.triggers = append(bot.triggers, trigger)
-	trigger.SetSendQueue(bot.sendQueue)
+	trigger.SetSender(bot.ircClient)
 }
 
 func (bot *Bot) RegisterCommand(command oodle.Command) {

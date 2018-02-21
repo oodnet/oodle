@@ -1,7 +1,6 @@
 package plugins
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -34,7 +33,7 @@ func (tell *Tell) notify(nick string) {
 	tell.db.Where("`to` = ?", nick).Find(&letters)
 	for _, l := range letters {
 		timeSince := time.Since(l.When)
-		tell.SendQueue <- fmt.Sprintf("%s, %s left this message for you: %s\n%s ago", nick, l.From, l.Body, durafmt.Parse(timeSince).String())
+		tell.IRC.Sendf("%s, %s left this message for you: %s\n%s ago", nick, l.From, l.Body, durafmt.Parse(timeSince).String())
 		tell.db.Delete(&l)
 		tell.lcount[nick]--
 	}
@@ -72,6 +71,9 @@ func (tell *Tell) OnEvent(event interface{}) {
 }
 
 func (tell *Tell) Execute(nick string, args []string) (string, error) {
+	if len(args) < 2 {
+		return "", oodle.ErrUsage
+	}
 	l := &Letter{
 		From: nick,
 		To:   args[0],

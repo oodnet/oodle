@@ -22,9 +22,15 @@ type Command interface {
 	Execute(nick string, args []string) (reply string, err error)
 }
 
+// Sender sends a msg. to irc
+type Sender interface {
+	Send(message string)
+	Sendf(format string, a ...interface{})
+}
+
 // Trigger can listen for a event and get triggered and send messages via. the send queue
 type Trigger interface {
-	SetSendQueue(sendqueue chan string)
+	SetSender(sender Sender)
 	OnEvent(event interface{})
 }
 
