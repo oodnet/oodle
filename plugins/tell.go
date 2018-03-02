@@ -9,6 +9,13 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+func fmtTime(t time.Time) string {
+	// gets rid of milliseconds, I think?
+	since := time.Since(t).Truncate(time.Second)
+	// formats it to 1 day etc.
+	return durafmt.Parse(since).String()
+}
+
 type Letter struct {
 	gorm.Model
 	From string
@@ -32,8 +39,7 @@ func (tell *Tell) notify(nick string) {
 	var letters []Letter
 	tell.db.Where("`to` = ?", nick).Find(&letters)
 	for _, l := range letters {
-		timeSince := time.Since(l.When)
-		tell.IRC.Sendf("%s, %s left this message for you: %s\n%s ago", nick, l.From, l.Body, durafmt.Parse(timeSince).String())
+		tell.IRC.Sendf("%s, %s left this message for you: %s\n%s ago", nick, l.From, l.Body, fmtTime(l.When))
 		tell.db.Delete(&l)
 		tell.lcount[nick]--
 	}

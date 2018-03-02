@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/godwhoa/oodle/oodle"
-	"github.com/hako/durafmt"
 	"github.com/jinzhu/gorm"
 )
 
@@ -43,8 +42,7 @@ func (seen *Seen) Execute(nick string, args []string) (string, error) {
 		return "", oodle.ErrUsage
 	}
 	if lastSeen, ok := seen.store[args[0]]; ok {
-		formatted := durafmt.Parse(time.Since(lastSeen)).String()
-		return fmt.Sprintf("%s was last seen %s ago.", args[0], formatted), nil
+		return fmt.Sprintf("%s was last seen %s ago.", args[0], fmtTime(lastSeen)), nil
 	}
 	return fmt.Sprintf("No logs for %s", args[0]), nil
 }
