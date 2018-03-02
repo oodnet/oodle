@@ -2,6 +2,7 @@ package plugins
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -104,5 +105,7 @@ func (give *Give) Execute(nick string, args []string) (string, error) {
 		return "You can't give points just yet.", nil
 	}
 	give.give(giver, reciver, point)
-	return "Okie Dokie", nil
+	reciverRep := &Reputation{}
+	give.db.Where(Reputation{User: reciver}).Find(reciverRep)
+	return fmt.Sprintf("%s now has %d points!", reciverRep.User, reciverRep.Points), nil
 }
