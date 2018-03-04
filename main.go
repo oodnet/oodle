@@ -44,6 +44,7 @@ func main() {
 		&plugins.Title{},
 		&plugins.Give{},
 		&plugins.Rank{},
+		&plugins.HackTerm{},
 	)
 
 	go webhook.Listen(config.WebHookAddr)
