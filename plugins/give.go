@@ -98,6 +98,9 @@ func (give *Give) Execute(nick string, args []string) (string, error) {
 	}
 	giver, reciver := nick, args[1]
 	point, _ := strconv.Atoi(args[0])
+	if !give.IRC.InChannel(reciver) {
+		return reciver + " not in channel.", nil
+	}
 	if giver == reciver {
 		return "You can't give yourself points.", nil
 	}
