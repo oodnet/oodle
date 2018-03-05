@@ -20,6 +20,7 @@ type Definitions struct {
 	Status string `json:"status"`
 	Count  int    `json:"count"`
 	Body   []struct {
+		Term string `json:"term"`
 		Body string `json:"body"`
 	} `json:"body"`
 }
@@ -130,8 +131,8 @@ func findDefinition(term string) string {
 	// concurrently wait on multiple channels
 	select {
 	case def := <-defCh:
-		return def.Body[0].Body
-	case <-time.After(1500 * time.Millisecond):
+		return def.Body[0].Term + ": " + def.Body[0].Body
+	case <-time.After(2000 * time.Millisecond):
 		return "No definitions found."
 	}
 }
