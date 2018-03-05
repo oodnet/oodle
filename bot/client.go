@@ -123,6 +123,11 @@ func (irc *IRCClient) InChannel(nick string) bool {
 	return user != nil && user.InChannel(irc.Channel)
 }
 
+func (irc *IRCClient) IsAuthed(nick string) bool {
+	user := irc.client.LookupUser(nick)
+	return user != nil && user.Extras.Account != ""
+}
+
 // Sendf works like printf but for irc msgs.
 func (irc *IRCClient) Sendf(format string, a ...interface{}) {
 	message := fmt.Sprintf(format, a...)
