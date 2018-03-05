@@ -15,6 +15,7 @@ type Config struct {
 	DBPath      string     `toml:"dbpath"`
 	WebHookAddr string     `toml:"webhook_addr"`
 	Secret      string     `toml:"secret"`
+	Commands    []string   `toml:"commands"`
 	Points      []int      `toml:"points"`
 	Cooldowns   []Duration `toml:"cooldowns"`
 }

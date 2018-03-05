@@ -35,17 +35,22 @@ func main() {
 
 	ircClient := bot.NewIRCClient(logger, config)
 	webhook := NewWebHook(ircClient, logger, config.Secret)
+	commandMap := map[string]interface{}{
+		"seen":     &plugins.Seen{},
+		"tell":     &plugins.Tell{},
+		"echo":     &plugins.Echo{Nick: config.Nick},
+		"title":    &plugins.Title{},
+		"give":     &plugins.Give{},
+		"rank":     &plugins.Rank{},
+		"hackterm": &plugins.HackTerm{},
+	}
 
 	oodleBot := bot.NewBot(logger, config, ircClient, db)
-	oodleBot.Register(
-		&plugins.Seen{},
-		&plugins.Tell{},
-		&plugins.Echo{Nick: config.Nick},
-		&plugins.Title{},
-		&plugins.Give{},
-		&plugins.Rank{},
-		&plugins.HackTerm{},
-	)
+	for _, commandName := range config.Commands {
+		if command, ok := commandMap[commandName]; ok {
+			oodleBot.Register(command)
+		}
+	}
 
 	go webhook.Listen(config.WebHookAddr)
 	logger.Fatal(oodleBot.Start())
