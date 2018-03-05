@@ -82,7 +82,7 @@ func (bot *Bot) handleCommand(nick string, message string) {
 
 func (bot *Bot) RegisterTrigger(trigger oodle.Trigger) {
 	bot.triggers = append(bot.triggers, trigger)
-	trigger.SetSender(bot.ircClient)
+	trigger.SetIRC(bot.ircClient)
 }
 
 func (bot *Bot) RegisterCommand(command oodle.Command) {

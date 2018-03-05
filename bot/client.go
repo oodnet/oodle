@@ -49,7 +49,7 @@ func (irc *IRCClient) Connect() error {
 		Nick:        irc.Nick,
 		User:        irc.User,
 		Name:        irc.Name,
-		RecoverFunc: func(_ *girc.Client, e *girc.HandlerError) { irc.log.Errorln(e.Error()) },
+		RecoverFunc: func(_ *girc.Client, e *girc.HandlerError) { irc.log.Errorf("%+v", e) },
 	}
 	if irc.SASLUser != "" && irc.SASLPass != "" {
 		gircConf.SASL = &girc.SASLPlain{User: irc.SASLUser, Pass: irc.SASLPass}
@@ -116,6 +116,11 @@ func (irc *IRCClient) OnEvent(callback func(event interface{})) {
 // Send sends an msg to the configured channel
 func (irc *IRCClient) Send(message string) {
 	irc.client.Cmd.Message(irc.Channel, message)
+}
+
+func (irc *IRCClient) InChannel(nick string) bool {
+	user := irc.client.LookupUser(nick)
+	return user != nil && user.InChannel(irc.Channel)
 }
 
 // Sendf works like printf but for irc msgs.
