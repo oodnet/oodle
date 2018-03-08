@@ -5,8 +5,10 @@ import (
 	"time"
 
 	"github.com/godwhoa/oodle/oodle"
+	"github.com/godwhoa/oodle/store"
 	"github.com/hako/durafmt"
 	"github.com/jinzhu/gorm"
+	"github.com/jmoiron/sqlx"
 )
 
 func fmtTime(t time.Time) string {
@@ -25,37 +27,23 @@ type Letter struct {
 }
 
 type Tell struct {
-	db *gorm.DB
-	// cache for checking if a user has mail
-	// to avoid querying for every msg.
-	lcount map[string]int
+	store *store.TellStore
 	oodle.BaseTrigger
 }
 
-func (tell *Tell) notify(nick string) {
-	if c, ok := tell.lcount[nick]; !ok || c < 1 {
+func (t *Tell) notify(nick string) {
+	if !t.store.HasMail(nick) {
 		return
 	}
-	var letters []Letter
-	tell.db.Where("`to` = ?", nick).Find(&letters)
+	letters := t.store.GetLetters(nick)
 	for _, l := range letters {
-		tell.IRC.Sendf("%s, %s left this message for you: %s\n%s ago", nick, l.From, l.Body, fmtTime(l.When))
-		tell.db.Delete(&l)
-		tell.lcount[nick]--
+		t.IRC.Sendf("%s, %s left this message for you: %s\n%s ago", nick, l.From, l.Body, fmtTime(l.When))
 	}
+	t.store.Delete(letters)
 }
 
-func (tell *Tell) Init(config *oodle.Config, db *gorm.DB) {
-	db.AutoMigrate(&Letter{})
-	tell.db = db
-	tell.lcount = make(map[string]int)
-
-	// update cache
-	var letters []Letter
-	db.Select("`to`").Find(&letters)
-	for _, l := range letters {
-		tell.lcount[l.To]++
-	}
+func (t *Tell) Init(config *oodle.Config, db *gorm.DB) {
+	t.store = store.NewTellStore(sqlx.NewDb(db.DB(), "sqlite3"))
 }
 
 func (tell *Tell) Info() oodle.CommandInfo {
@@ -67,26 +55,27 @@ func (tell *Tell) Info() oodle.CommandInfo {
 	}
 }
 
-func (tell *Tell) OnEvent(event interface{}) {
+func (t *Tell) OnEvent(event interface{}) {
 	switch event.(type) {
 	case oodle.Join:
-		tell.notify(event.(oodle.Join).Nick)
+		t.notify(event.(oodle.Join).Nick)
 	case oodle.Message:
-		tell.notify(event.(oodle.Message).Nick)
+		t.notify(event.(oodle.Message).Nick)
 	}
 }
 
-func (tell *Tell) Execute(nick string, args []string) (string, error) {
+func (t *Tell) Execute(nick string, args []string) (string, error) {
 	if len(args) < 2 {
 		return "", oodle.ErrUsage
 	}
-	l := &Letter{
+	err := t.store.Send(store.Letter{
 		From: nick,
 		To:   args[0],
 		Body: strings.Join(args[1:], " "),
 		When: time.Now(),
+	})
+	if err != nil {
+		return "Internal Error", nil
 	}
-	tell.db.Create(l)
-	tell.lcount[args[0]]++
 	return "okie dokie!", nil
 }
