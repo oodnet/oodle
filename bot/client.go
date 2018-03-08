@@ -123,7 +123,7 @@ func (irc *IRCClient) InChannel(nick string) bool {
 	return user != nil && user.InChannel(irc.Channel)
 }
 
-func (irc *IRCClient) IsAuthed(nick string) bool {
+func (irc *IRCClient) IsRegistered(nick string) bool {
 	user := irc.client.LookupUser(nick)
 	return user != nil && user.Extras.Account != ""
 }

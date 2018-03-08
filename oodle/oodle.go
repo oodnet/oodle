@@ -22,7 +22,9 @@ type Command interface {
 	Execute(nick string, args []string) (reply string, err error)
 }
 
+// IRCClient is a simplified client given to plugins.
 type IRCClient interface {
+	IsRegistered(nick string) bool
 	InChannel(nick string) bool
 	Send(message string)
 	Sendf(format string, a ...interface{})

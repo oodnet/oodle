@@ -25,3 +25,4 @@ commands = [
 ]
 # points = [1,2,-1]
 # cooldowns = ["5s", "8s", "5s"]
+# registred_only = true

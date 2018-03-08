@@ -50,12 +50,14 @@ func canGive(db *gorm.DB, giver string) bool {
 type Give struct {
 	db *gorm.DB
 	oodle.BaseTrigger
-	cooldowns map[int]time.Duration
+	registeredOnly bool
+	cooldowns      map[int]time.Duration
 }
 
 func (give *Give) Init(config *oodle.Config, db *gorm.DB) {
 	db.AutoMigrate(&Reputation{})
 	give.db = db
+	give.registeredOnly = config.RegisteredOnly
 	give.cooldowns = make(map[int]time.Duration)
 	for i, point := range config.Points {
 		give.cooldowns[point] = config.Cooldowns[i].Duration
@@ -100,6 +102,9 @@ func (give *Give) Execute(nick string, args []string) (string, error) {
 	point, _ := strconv.Atoi(args[0])
 	if !give.IRC.InChannel(reciver) {
 		return reciver + " not in channel.", nil
+	}
+	if give.registeredOnly && !give.IRC.IsRegistered(giver) {
+		return "Only registered nicks can give.", nil
 	}
 	if giver == reciver {
 		return "You can't give yourself points.", nil
