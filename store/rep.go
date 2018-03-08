@@ -31,14 +31,20 @@ func (r *RepStore) Migrate() {
 		"user" varchar(255) NOT NULL UNIQUE,
 		"points" integer DEFAULT 0,
 		"next" datetime NOT NULL
-	)
+	);
 	`
 	r.db.MustExec(stmt)
 }
 
 // Initializes a user if they don't exist
-func initUser(tx *sqlx.Tx, user string) {
-	tx.Exec(`INSERT OR IGNORE INTO user_reputations(user, next) VALUES(?,?);`, user, time.Now().Add(-1*time.Second))
+func initUser(tx *sqlx.Tx, users ...string) error {
+	for _, user := range users {
+		_, err := tx.Exec(`INSERT OR IGNORE INTO user_reputations(user, next) VALUES(?,?);`, user, time.Now().Add(-1*time.Second))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (r *RepStore) Inc(giver, reciver string, point int) error {
@@ -46,8 +52,9 @@ func (r *RepStore) Inc(giver, reciver string, point int) error {
 	next := time.Now().Add(cooldown)
 	tx := r.db.MustBegin()
 	// initialize giver/reciver if they don't exist
-	initUser(tx, giver)
-	initUser(tx, reciver)
+	if err := initUser(tx, giver, reciver); err != nil {
+		return err
+	}
 	// increment rep for reciver
 	if _, err := tx.Exec(`UPDATE user_reputations SET points = points + ? WHERE user = ?;`, point, reciver); err != nil {
 		return err
