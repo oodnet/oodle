@@ -36,8 +36,14 @@ type Trigger interface {
 	OnEvent(event interface{})
 }
 
-type Stateful interface {
-	Init(config *Config, db *gorm.DB)
+// Persistable for plugins that need to persist
+type Persistable interface {
+	SetDB(db *gorm.DB)
+}
+
+// Configureable for plugins that depend on config
+type Configureable interface {
+	Configure(config *Config)
 }
 
 type Bot interface {
