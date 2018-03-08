@@ -101,7 +101,7 @@ func getDefinition(term string) (*Definitions, error) {
 }
 
 // findDefinition launches two concurrent reqs.
-// req 1: search for the term, then get the definition (It has two make two req. so slower)
+// req 1: search for the term, then get the definition (It has to make two req. so slower)
 // req 2: directly get the definition (Just one direct req.)
 // neither will send to the defCh channel unless they get it right
 // we have a timeout if neither finishes
