@@ -2,17 +2,20 @@ package plugins
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/godwhoa/oodle/oodle"
+	"github.com/godwhoa/oodle/store"
 	"github.com/jinzhu/gorm"
+	"github.com/jmoiron/sqlx"
 	"github.com/lrstanley/girc"
 )
 
 type Rank struct {
-	db *gorm.DB
+	store *store.RepStore
 }
 
-func (rank *Rank) Info() oodle.CommandInfo {
+func (r *Rank) Info() oodle.CommandInfo {
 	return oodle.CommandInfo{
 		Prefix:      ".",
 		Name:        "rank",
@@ -21,18 +24,14 @@ func (rank *Rank) Info() oodle.CommandInfo {
 	}
 }
 
-func (rank *Rank) Init(config *oodle.Config, db *gorm.DB) {
-	rank.db = db
+func (r *Rank) Init(config *oodle.Config, db *gorm.DB) {
+	r.store = store.NewRepStore(sqlx.NewDb(db.DB(), "sqlite3"), make(map[int]time.Duration))
 }
 
-func (rank *Rank) Execute(nick string, args []string) (string, error) {
+func (r *Rank) Execute(nick string, args []string) (string, error) {
 	if len(args) < 1 || !girc.IsValidNick(args[0]) {
 		return "", oodle.ErrUsage
 	}
-	db := rank.db
-	userRep := &Reputation{}
-	if db.Where(Reputation{User: args[0]}).Find(userRep).RecordNotFound() {
-		return fmt.Sprintf("No records for %s in db.", args[0]), nil
-	}
+	userRep, _ := r.store.GetUserRep(args[0])
 	return fmt.Sprintf("%s has %d points", userRep.User, userRep.Points), nil
 }
