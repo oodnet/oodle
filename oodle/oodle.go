@@ -30,9 +30,13 @@ type IRCClient interface {
 	Sendf(format string, a ...interface{})
 }
 
+// Interactive for plugins that interact with irc
+type Interactive interface {
+	SetIRC(irc IRCClient)
+}
+
 // Trigger can listen for a event and get triggered and send messages via. the send queue
 type Trigger interface {
-	SetIRC(irc IRCClient)
 	OnEvent(event interface{})
 }
 
