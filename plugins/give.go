@@ -75,6 +75,7 @@ func (g *Give) Execute(nick string, args []string) (string, error) {
 	if err := checkPoint(args[0], g.cooldowns); err != nil {
 		return err.Error(), nil
 	}
+
 	giver, reciver := nick, args[1]
 	point, _ := strconv.Atoi(args[0])
 	if !g.IRC.InChannel(reciver) {

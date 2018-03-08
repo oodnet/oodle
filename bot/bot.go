@@ -53,7 +53,7 @@ func (bot *Bot) relayTrigger(event interface{}) {
 }
 
 func (bot *Bot) handleCommand(nick string, message string) {
-	args := strings.Split(message, " ")
+	args := strings.Split(strings.TrimSpace(message), " ")
 	if len(args) < 1 {
 		return
 	}
