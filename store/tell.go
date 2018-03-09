@@ -1,7 +1,6 @@
 package store
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -54,7 +53,7 @@ func (t *TellStore) Send(l Letter) error {
 
 func (t *TellStore) GetLetters(to string) []*Letter {
 	letters := []*Letter{}
-	fmt.Println(t.db.Select(&letters, `SELECT * FROM letters WHERE "to" = ? AND "deleted_at" IS NULL;`, to))
+	t.db.Select(&letters, `SELECT * FROM letters WHERE "to" = ? AND "deleted_at" IS NULL;`, to)
 	return letters
 }
 
