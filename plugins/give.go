@@ -1,6 +1,7 @@
 package plugins
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"strconv"
@@ -8,17 +9,9 @@ import (
 
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/godwhoa/oodle/store"
-	"github.com/jinzhu/gorm"
 	"github.com/jmoiron/sqlx"
 	"github.com/lrstanley/girc"
 )
-
-type Reputation struct {
-	gorm.Model
-	User   string
-	Points int
-	Next   time.Time
-}
 
 var (
 	errNotInt       = errors.New("Point is not an integer.")
@@ -44,19 +37,23 @@ func canGive(s *store.RepStore, giver string) bool {
 }
 
 type Give struct {
-	store *store.RepStore
-	oodle.BaseTrigger
+	store          *store.RepStore
 	registeredOnly bool
 	cooldowns      map[int]time.Duration
+	oodle.BaseInteractive
 }
 
-func (g *Give) Init(config *oodle.Config, db *gorm.DB) {
+func (g *Give) Configure(config *oodle.Config) {
 	g.registeredOnly = config.RegisteredOnly
 	g.cooldowns = make(map[int]time.Duration)
 	for i, point := range config.Points {
 		g.cooldowns[point] = config.Cooldowns[i].Duration
 	}
-	g.store = store.NewRepStore(sqlx.NewDb(db.DB(), "sqlite3"), g.cooldowns)
+
+}
+
+func (g *Give) SetDB(db *sql.DB) {
+	g.store = store.NewRepStore(sqlx.NewDb(db, "sqlite3"), g.cooldowns)
 }
 
 func (g *Give) Info() oodle.CommandInfo {

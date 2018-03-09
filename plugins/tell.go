@@ -1,6 +1,7 @@
 package plugins
 
 import (
+	"database/sql"
 	"strings"
 	"time"
 
@@ -28,7 +29,7 @@ type Letter struct {
 
 type Tell struct {
 	store *store.TellStore
-	oodle.BaseTrigger
+	oodle.BaseInteractive
 }
 
 func (t *Tell) notify(nick string) {
@@ -42,8 +43,8 @@ func (t *Tell) notify(nick string) {
 	t.store.Delete(letters)
 }
 
-func (t *Tell) Init(config *oodle.Config, db *gorm.DB) {
-	t.store = store.NewTellStore(sqlx.NewDb(db.DB(), "sqlite3"))
+func (t *Tell) SetDB(db *sql.DB) {
+	t.store = store.NewTellStore(sqlx.NewDb(db, "sqlite3"))
 }
 
 func (tell *Tell) Info() oodle.CommandInfo {

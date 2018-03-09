@@ -1,12 +1,12 @@
 package plugins
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/godwhoa/oodle/store"
-	"github.com/jinzhu/gorm"
 	"github.com/jmoiron/sqlx"
 	"github.com/lrstanley/girc"
 )
@@ -24,8 +24,8 @@ func (r *Rank) Info() oodle.CommandInfo {
 	}
 }
 
-func (r *Rank) Init(config *oodle.Config, db *gorm.DB) {
-	r.store = store.NewRepStore(sqlx.NewDb(db.DB(), "sqlite3"), make(map[int]time.Duration))
+func (r *Rank) SetDB(db *sql.DB) {
+	r.store = store.NewRepStore(sqlx.NewDb(db, "sqlite3"), make(map[int]time.Duration))
 }
 
 func (r *Rank) Execute(nick string, args []string) (string, error) {

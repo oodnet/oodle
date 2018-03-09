@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/godwhoa/oodle/oodle"
-	"github.com/jinzhu/gorm"
 )
 
 type Seen struct {
@@ -13,7 +12,7 @@ type Seen struct {
 	oodle.BaseTrigger
 }
 
-func (seen *Seen) Init(config *oodle.Config, db *gorm.DB) {
+func (seen *Seen) Configure(config *oodle.Config) {
 	seen.store = make(map[string]time.Time)
 }
 
