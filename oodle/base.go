@@ -1,13 +1,15 @@
 package oodle
 
 // BaseTrigger is just an implementation of Trigger to reduce some boilerplate code
-type BaseTrigger struct {
+type BaseTrigger struct{}
+
+func (bt *BaseTrigger) OnEvent(msg interface{}) {
+}
+
+type BaseInteractive struct {
 	IRC IRCClient
 }
 
-func (btrigger *BaseTrigger) OnEvent(msg interface{}) {
-}
-
-func (btrigger *BaseTrigger) SetIRC(irc IRCClient) {
-	btrigger.IRC = irc
+func (bi *BaseInteractive) SetIRC(irc IRCClient) {
+	bi.IRC = irc
 }
