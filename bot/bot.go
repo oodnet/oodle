@@ -82,24 +82,9 @@ func (bot *Bot) handleCommand(nick string, message string) {
 
 func (bot *Bot) RegisterTrigger(trigger oodle.Trigger) {
 	bot.triggers = append(bot.triggers, trigger)
-	trigger.SetIRC(bot.ircClient)
 }
 
 func (bot *Bot) RegisterCommand(command oodle.Command) {
 	cmdinfo := command.Info()
 	bot.commandMap[cmdinfo.Prefix+cmdinfo.Name] = command
-}
-
-func (bot *Bot) Register(plugins ...interface{}) {
-	for _, plugin := range plugins {
-		if command, ok := plugin.(oodle.Command); ok {
-			bot.RegisterCommand(command)
-		}
-		if trigger, ok := plugin.(oodle.Trigger); ok {
-			bot.RegisterTrigger(trigger)
-		}
-		if stateful, ok := plugin.(oodle.Stateful); ok {
-			stateful.Init(bot.config, bot.db)
-		}
-	}
 }
