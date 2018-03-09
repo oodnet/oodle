@@ -16,7 +16,7 @@
 ## Usage
 ```bash
 # Download latest build
-curl -s https://api.github.com/repos/godwhoa/oodle/releases/latest | grep browser_download_url | cut -d '"' -f 4 | xargs -L 1 wget
+curl -s https://api.github.com/repos/godwhoa/oodle/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep -v arm | xargs -L 1 wget
 # Edit config
 vim config.toml
 # Make it executable
