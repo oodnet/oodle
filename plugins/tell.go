@@ -8,7 +8,6 @@ import (
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/godwhoa/oodle/store"
 	"github.com/hako/durafmt"
-	"github.com/jinzhu/gorm"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -17,14 +16,6 @@ func fmtTime(t time.Time) string {
 	since := time.Since(t).Truncate(time.Second)
 	// formats it to 1 day etc.
 	return durafmt.Parse(since).String()
-}
-
-type Letter struct {
-	gorm.Model
-	From string
-	To   string
-	Body string
-	When time.Time
 }
 
 type Tell struct {

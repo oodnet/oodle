@@ -5,7 +5,6 @@ import (
 	"github.com/godwhoa/oodle/bot"
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/godwhoa/oodle/plugins"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	flag "github.com/ogier/pflag"
 	"github.com/sirupsen/logrus"
 )
