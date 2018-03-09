@@ -18,6 +18,13 @@ func fmtTime(t time.Time) string {
 	return durafmt.Parse(since).String()
 }
 
+func fmtDur(d time.Duration) string {
+	// gets rid of milliseconds, I think?
+	d = d.Truncate(time.Second)
+	// formats it to 1 second etc.
+	return durafmt.Parse(d).String()
+}
+
 type Tell struct {
 	store *store.TellStore
 	oodle.BaseInteractive

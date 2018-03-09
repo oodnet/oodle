@@ -40,6 +40,7 @@ func main() {
 	pm.RegisterPlugin("echo", &plugins.Echo{})
 	pm.RegisterPlugin("title", &plugins.Title{})
 	pm.RegisterPlugin("give", &plugins.Give{})
+	pm.RegisterPlugin("rep", &plugins.Rep{})
 	pm.RegisterPlugin("rank", &plugins.Rank{})
 	pm.RegisterPlugin("hackterm", &plugins.HackTerm{})
 

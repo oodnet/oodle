@@ -31,9 +31,11 @@ func checkPoint(str string, m map[int]time.Duration) error {
 }
 
 // Checks if a giver isn't in a timeout
-func canGive(s *store.RepStore, giver string) bool {
+func canGive(s *store.RepStore, giver string) (time.Duration, bool) {
 	giverRep, err := s.GetUserRep(giver)
-	return err == nil && time.Now().After(giverRep.Next)
+	can := err == nil && time.Now().After(giverRep.Next)
+	next := giverRep.Next.Sub(time.Now())
+	return next, can
 }
 
 type Give struct {
@@ -65,6 +67,22 @@ func (g *Give) Info() oodle.CommandInfo {
 	}
 }
 
+func (g *Give) Validate(giver, reciver string) string {
+	if giver == reciver {
+		return "You can't give yourself points."
+	}
+	if !g.IRC.InChannel(reciver) {
+		return reciver + " not in channel."
+	}
+	if g.registeredOnly && !g.IRC.IsRegistered(giver) {
+		return "Only registered nicks can give."
+	}
+	if left, can := canGive(g.store, giver); !can {
+		return "You can't give points just yet. Wait " + fmtDur(left)
+	}
+	return ""
+}
+
 func (g *Give) Execute(nick string, args []string) (string, error) {
 	if len(args) != 2 || !girc.IsValidNick(args[1]) {
 		return "", oodle.ErrUsage
@@ -75,18 +93,11 @@ func (g *Give) Execute(nick string, args []string) (string, error) {
 
 	giver, reciver := nick, args[1]
 	point, _ := strconv.Atoi(args[0])
-	if !g.IRC.InChannel(reciver) {
-		return reciver + " not in channel.", nil
+
+	if m := g.Validate(giver, reciver); m != "" {
+		return m, nil
 	}
-	if g.registeredOnly && !g.IRC.IsRegistered(giver) {
-		return "Only registered nicks can give.", nil
-	}
-	if giver == reciver {
-		return "You can't give yourself points.", nil
-	}
-	if !canGive(g.store, giver) {
-		return "You can't give points just yet.", nil
-	}
+
 	g.store.Inc(giver, reciver, point)
 	reciverRep, _ := g.store.GetUserRep(reciver)
 	return fmt.Sprintf("%s now has %d points!", reciverRep.User, reciverRep.Points), nil

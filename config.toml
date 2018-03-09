@@ -17,12 +17,13 @@ webhook_addr = "127.0.0.1:8000"
 commands = [
     "seen",
     "tell",
-    # "give",
-    # "rank",
+    "rep",
+    "give",
+    "rank",
     "echo",
     "title",
     "hackterm"
 ]
-# points = [1,2,-1]
-# cooldowns = ["5s", "8s", "5s"]
-# registered_only = true
+points = [1,2,-1]
+cooldowns = ["20s", "8m", "10s"]
+registered_only = true
