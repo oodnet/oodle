@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/godwhoa/oodle/oodle"
-	"github.com/jinzhu/gorm"
 	"github.com/lrstanley/girc"
 	"github.com/sirupsen/logrus"
 )
@@ -14,17 +13,13 @@ type Bot struct {
 	commandMap map[string]oodle.Command
 	client     *girc.Client
 	log        *logrus.Logger
-	config     *oodle.Config
 	ircClient  *IRCClient
-	db         *gorm.DB
 }
 
-func NewBot(logger *logrus.Logger, config *oodle.Config, ircClient *IRCClient, db *gorm.DB) *Bot {
+func NewBot(logger *logrus.Logger, ircClient *IRCClient) *Bot {
 	return &Bot{
 		log:        logger,
-		config:     config,
 		ircClient:  ircClient,
-		db:         db,
 		commandMap: make(map[string]oodle.Command),
 	}
 }

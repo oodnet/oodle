@@ -28,14 +28,9 @@ func main() {
 
 	ircClient := bot.NewIRCClient(logger, config)
 
-	oodleBot := bot.NewBot(logger, config, ircClient, db)
-	for _, commandName := range config.Commands {
-		if command, ok := commandMap[commandName]; ok {
-			oodleBot.Register(command)
-		}
-	}
+	oodleBot := bot.NewBot(logger, ircClient)
 
-	pm := NewPM(ircClient, config, oodleBot)
+	pm, err := NewPM(ircClient, config, oodleBot)
 	if err != nil {
 		logger.Fatal(err)
 	}

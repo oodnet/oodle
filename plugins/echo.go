@@ -5,19 +5,22 @@ import (
 )
 
 type Echo struct {
-	Nick string
-	oodle.BaseTrigger
+	nick string
 }
 
-func (echo *Echo) Info() oodle.CommandInfo {
+func (e *Echo) Configure(config *oodle.Config) {
+	e.nick = config.Nick
+}
+
+func (e *Echo) Info() oodle.CommandInfo {
 	return oodle.CommandInfo{
 		Prefix:      "",
-		Name:        echo.Nick + "!",
+		Name:        e.nick + "!",
 		Description: "Exlamates your nick back!",
-		Usage:       echo.Nick + "!",
+		Usage:       e.nick + "!",
 	}
 }
 
-func (echo *Echo) Execute(nick string, args []string) (string, error) {
+func (e *Echo) Execute(nick string, args []string) (string, error) {
 	return nick + "!", nil
 }
