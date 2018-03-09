@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/godwhoa/oodle/oodle"
+	"github.com/godwhoa/oodle/store"
 	"github.com/jinzhu/gorm"
+	"github.com/jmoiron/sqlx"
 	"github.com/lrstanley/girc"
 )
 
@@ -36,35 +38,28 @@ func checkPoint(str string, m map[int]time.Duration) error {
 }
 
 // Checks if a giver isn't in a timeout
-func canGive(db *gorm.DB, giver string) bool {
-	giverRep := &Reputation{}
-	db.Where(Reputation{User: giver}).
-		Attrs(Reputation{
-			Points: 0,
-			Next:   time.Now().Add(-1 * time.Second),
-		}).
-		FirstOrCreate(giverRep)
-	return time.Now().After(giverRep.Next)
+func canGive(s *store.RepStore, giver string) bool {
+	giverRep, err := s.GetUserRep(giver)
+	return err == nil && time.Now().After(giverRep.Next)
 }
 
 type Give struct {
-	db *gorm.DB
+	store *store.RepStore
 	oodle.BaseTrigger
 	registeredOnly bool
 	cooldowns      map[int]time.Duration
 }
 
-func (give *Give) Init(config *oodle.Config, db *gorm.DB) {
-	db.AutoMigrate(&Reputation{})
-	give.db = db
-	give.registeredOnly = config.RegisteredOnly
-	give.cooldowns = make(map[int]time.Duration)
+func (g *Give) Init(config *oodle.Config, db *gorm.DB) {
+	g.registeredOnly = config.RegisteredOnly
+	g.cooldowns = make(map[int]time.Duration)
 	for i, point := range config.Points {
-		give.cooldowns[point] = config.Cooldowns[i].Duration
+		g.cooldowns[point] = config.Cooldowns[i].Duration
 	}
+	g.store = store.NewRepStore(sqlx.NewDb(db.DB(), "sqlite3"), g.cooldowns)
 }
 
-func (give *Give) Info() oodle.CommandInfo {
+func (g *Give) Info() oodle.CommandInfo {
 	return oodle.CommandInfo{
 		Prefix:      ".",
 		Name:        "give",
@@ -73,47 +68,29 @@ func (give *Give) Info() oodle.CommandInfo {
 	}
 }
 
-func (give *Give) give(giver, reciver string, point int) {
-	giverRep, reciverRep := &Reputation{}, &Reputation{}
-	next := time.Now().Add(give.cooldowns[point])
-	db := give.db
-	// TODO: make this more efficent.
-	// increment rep for reciver
-	db.Where(Reputation{User: reciver}).
-		Attrs(Reputation{
-			Next: time.Now().Add(-1 * time.Second),
-		}).
-		FirstOrCreate(reciverRep)
-	db.Model(reciverRep).
-		UpdateColumn("points", gorm.Expr("points + ?", point))
-	// add cooldown for giver
-	db.Model(giverRep).Where(Reputation{User: giver}).
-		Update("next", next)
-}
-
-func (give *Give) Execute(nick string, args []string) (string, error) {
+func (g *Give) Execute(nick string, args []string) (string, error) {
 	if len(args) != 2 || !girc.IsValidNick(args[1]) {
 		return "", oodle.ErrUsage
 	}
-	if err := checkPoint(args[0], give.cooldowns); err != nil {
+	if err := checkPoint(args[0], g.cooldowns); err != nil {
 		return err.Error(), nil
 	}
+
 	giver, reciver := nick, args[1]
 	point, _ := strconv.Atoi(args[0])
-	if !give.IRC.InChannel(reciver) {
+	if !g.IRC.InChannel(reciver) {
 		return reciver + " not in channel.", nil
 	}
-	if give.registeredOnly && !give.IRC.IsRegistered(giver) {
+	if g.registeredOnly && !g.IRC.IsRegistered(giver) {
 		return "Only registered nicks can give.", nil
 	}
 	if giver == reciver {
 		return "You can't give yourself points.", nil
 	}
-	if !canGive(give.db, giver) {
+	if !canGive(g.store, giver) {
 		return "You can't give points just yet.", nil
 	}
-	give.give(giver, reciver, point)
-	reciverRep := &Reputation{}
-	give.db.Where(Reputation{User: reciver}).Find(reciverRep)
+	g.store.Inc(giver, reciver, point)
+	reciverRep, _ := g.store.GetUserRep(reciver)
 	return fmt.Sprintf("%s now has %d points!", reciverRep.User, reciverRep.Points), nil
 }

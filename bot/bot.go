@@ -34,7 +34,7 @@ func (bot *Bot) Start() error {
 	bot.log.Info("Connecting...")
 	bot.ircClient.OnEvent(func(event interface{}) {
 		if msg, ok := event.(oodle.Message); ok {
-			bot.handleCommand(msg.Nick, msg.Msg)
+			go bot.handleCommand(msg.Nick, msg.Msg)
 		}
 	})
 	bot.ircClient.OnEvent(bot.relayTrigger)
@@ -48,12 +48,12 @@ func (bot *Bot) Stop() {
 
 func (bot *Bot) relayTrigger(event interface{}) {
 	for _, trigger := range bot.triggers {
-		trigger.OnEvent(event)
+		go trigger.OnEvent(event)
 	}
 }
 
 func (bot *Bot) handleCommand(nick string, message string) {
-	args := strings.Split(message, " ")
+	args := strings.Split(strings.TrimSpace(message), " ")
 	if len(args) < 1 {
 		return
 	}
