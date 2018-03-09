@@ -1,9 +1,8 @@
 package oodle
 
 import (
+	"database/sql"
 	"errors"
-
-	"github.com/jinzhu/gorm"
 )
 
 var ErrUsage = errors.New("Wrong command usage")
@@ -42,7 +41,7 @@ type Trigger interface {
 
 // Persistable for plugins that need to persist
 type Persistable interface {
-	SetDB(db *gorm.DB)
+	SetDB(db *sql.DB)
 }
 
 // Configureable for plugins that depend on config
