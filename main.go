@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/BurntSushi/toml"
 	"github.com/godwhoa/oodle/bot"
 	"github.com/godwhoa/oodle/oodle"
@@ -10,15 +12,23 @@ import (
 )
 
 func main() {
-	confpath := *flag.StringP("config", "c", "config.toml", "Specifies which configfile to use")
+	confpath := flag.StringP("config", "c", "config.toml", "Specifies which configfile to use")
+	doUpgrade := flag.BoolP("upgrade", "u", false, "Upgrades oodle")
 	flag.Parse()
 
 	logger := logrus.New()
 	logger.Formatter = &logrus.TextFormatter{DisableColors: true}
 	logger.SetLevel(logrus.DebugLevel)
 
+	if *doUpgrade {
+		if err := upgrade(); err != nil {
+			logger.Fatal(err)
+		}
+		os.Exit(0)
+	}
+
 	config := &oodle.Config{}
-	if _, err := toml.DecodeFile(confpath, config); err != nil {
+	if _, err := toml.DecodeFile(*confpath, config); err != nil {
 		logger.Fatal(err)
 	}
 	if len(config.Cooldowns) != len(config.Points) {
