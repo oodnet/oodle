@@ -2,6 +2,7 @@ package plugins
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/godwhoa/oodle/oodle"
@@ -25,7 +26,8 @@ func (title *Title) OnEvent(event interface{}) {
 				if err != nil {
 					return
 				}
-				title.IRC.Send(doc.Find("title").First().Text())
+				pageTitle := doc.Find("title").First().Text()
+				title.IRC.Send(strings.TrimSpace(pageTitle))
 			}
 		}
 	}
