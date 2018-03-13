@@ -27,3 +27,7 @@ commands = [
 points = [1,2,-1]
 cooldowns = ["20s", "8m", "10s"]
 registered_only = true
+# .site -> https://pacn.in etc.
+[custom_commands]
+".site" = "https://pacn.in"
+".google" = "https://google.in"
