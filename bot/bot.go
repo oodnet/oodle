@@ -52,6 +52,28 @@ func (bot *Bot) handleCommand(nick string, message string) {
 	if len(args) < 1 {
 		return
 	}
+
+	// TODO: make them regular commands
+	// TODO: also needs to work with custom commands
+	if args[0] == ".help" && len(args) == 2 {
+		if command, ok := bot.commandMap[args[1]]; ok {
+			info := command.Info()
+			bot.ircClient.Sendf("Desciption: %s\nUsage: %s", info.Description, info.Usage)
+			return
+		}
+		bot.ircClient.Send("Unknown command.")
+		return
+	}
+	if args[0] == ".list" && len(args) == 1 {
+		buf := ""
+		for name := range bot.commandMap {
+			buf += name + ", "
+		}
+		buf += ".list, .help"
+		bot.ircClient.Send(buf)
+		return
+	}
+
 	command, ok := bot.commandMap[args[0]]
 	if !ok {
 		return
