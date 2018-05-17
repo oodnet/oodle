@@ -43,7 +43,7 @@ func (bot *Bot) Stop() {
 
 func (bot *Bot) relayTrigger(event interface{}) {
 	for _, trigger := range bot.triggers {
-		trigger.OnEvent(event)
+		trigger(event)
 	}
 }
 
@@ -57,8 +57,7 @@ func (bot *Bot) handleCommand(nick string, message string) {
 	// TODO: also needs to work with custom commands
 	if args[0] == ".help" && len(args) == 2 {
 		if command, ok := bot.commandMap[args[1]]; ok {
-			info := command.Info()
-			bot.ircClient.Sendf("Desciption: %s\nUsage: %s", info.Description, info.Usage)
+			bot.ircClient.Sendf("Desciption: %s\nUsage: %s", command.Description, command.Usage)
 			return
 		}
 		bot.ircClient.Send("Unknown command.")
@@ -79,10 +78,10 @@ func (bot *Bot) handleCommand(nick string, message string) {
 		return
 	}
 
-	reply, err := command.Execute(nick, args[1:])
+	reply, err := command.Fn(nick, args[1:])
 	switch err {
 	case oodle.ErrUsage:
-		bot.ircClient.Sendf("Usage: " + command.Info().Usage)
+		bot.ircClient.Sendf("Usage: " + command.Usage)
 	case nil:
 		bot.ircClient.Send(reply)
 	default:
@@ -97,11 +96,16 @@ func (bot *Bot) handleCommand(nick string, message string) {
 	}).Debug("CommandExec")
 }
 
-func (bot *Bot) RegisterTrigger(trigger oodle.Trigger) {
-	bot.triggers = append(bot.triggers, trigger)
-}
-
-func (bot *Bot) RegisterCommand(command oodle.Command) {
-	cmdinfo := command.Info()
-	bot.commandMap[cmdinfo.Prefix+cmdinfo.Name] = command
+func (bot *Bot) Register(plugins ...interface{}) {
+	for _, plugin := range plugins {
+		switch plugin.(type) {
+		case oodle.Command:
+			cmd := plugin.(oodle.Command)
+			bot.commandMap[cmd.Prefix+cmd.Name] = cmd
+		case oodle.Trigger:
+			bot.triggers = append(bot.triggers, plugin.(oodle.Trigger))
+		default:
+			bot.log.Warnf("%+v is neither a Command or a Trigger.", plugin)
+		}
+	}
 }

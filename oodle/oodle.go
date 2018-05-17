@@ -3,23 +3,22 @@ package oodle
 import (
 	"database/sql"
 	"errors"
+
+	"github.com/sirupsen/logrus"
 )
 
 var ErrUsage = errors.New("Wrong command usage")
 
-// CommandInfo contains information of a command
-type CommandInfo struct {
+type Command struct {
 	Prefix      string
 	Name        string
 	Description string
 	Usage       string
+	Fn          func(nick string, args []string) (reply string, err error)
 }
 
-// Command is like a pure function just inputs and outputs
-type Command interface {
-	Info() CommandInfo
-	Execute(nick string, args []string) (reply string, err error)
-}
+// Trigger is a basic event handler
+type Trigger func(event interface{})
 
 // IRCClient is a simplified client given to plugins.
 type IRCClient interface {
@@ -29,27 +28,17 @@ type IRCClient interface {
 	Sendf(format string, a ...interface{})
 }
 
-// Interactive for plugins that interact with irc
-type Interactive interface {
-	SetIRC(irc IRCClient)
-}
-
-// Trigger can listen for a event and get triggered and send messages via. the send queue
-type Trigger interface {
-	OnEvent(event interface{})
-}
-
-// Persistable for plugins that need to persist
-type Persistable interface {
-	SetDB(db *sql.DB)
-}
-
-// Configureable for plugins that depend on config
-type Configureable interface {
-	Configure(config *Config)
-}
-
+// Bot handles trigger/command execution
 type Bot interface {
-	RegisterTrigger(trigger Trigger)
-	RegisterCommand(command Command)
+	// Register registers Trigger/Command only.
+	Register(plugins ...interface{})
+}
+
+// Deps is a container for common dependencies
+type Deps struct {
+	IRC    IRCClient
+	Bot    Bot
+	DB     *sql.DB
+	Config *Config
+	Logger *logrus.Logger
 }
