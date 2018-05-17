@@ -12,13 +12,15 @@ import (
 
 // Register wires everything up
 func Register(deps oodle.Deps) error {
-	irc, bot, config := deps.IRC, deps.Bot, deps.Config
+	irc, bot, config, db := deps.IRC, deps.Bot, deps.Config, deps.DB
 	seenCmd, seenTrig := Seen()
+	tellCmd, tellTrig := Tell(irc, db)
 	bot.Register(
 		Echo(config.Nick),
 		CustomCommands(config.CustomCommands, irc),
 		TitleScraper(irc),
 		seenCmd, seenTrig,
+		tellCmd, tellTrig,
 	)
 
 	return nil
