@@ -1,4 +1,4 @@
-package plugins
+package hackterm
 
 import (
 	"encoding/json"
@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/godwhoa/oodle/oodle"
 )
 
 var (
@@ -16,7 +14,7 @@ var (
 	errNoResults     = errors.New("No search results.")
 )
 
-type Definitions struct {
+type definitions struct {
 	Status string `json:"status"`
 	Count  int    `json:"count"`
 	Body   []struct {
@@ -25,7 +23,7 @@ type Definitions struct {
 	} `json:"body"`
 }
 
-type SearchResults struct {
+type searchResults struct {
 	Status string `json:"status"`
 	Count  int    `json:"count"`
 	Body   []struct {
@@ -34,8 +32,13 @@ type SearchResults struct {
 	} `json:"body"`
 }
 
-// Lets pretend to be a browser :)
-func setHeaders(req *http.Request) {
+// POST makes a POST req. while pretending to be a real browser :)
+func POST(url, form string) ([]byte, error) {
+	req, err := http.NewRequest("POST", url, strings.NewReader(form))
+	if err != nil {
+		return []byte{}, err
+	}
+
 	req.Header.Set("Pragma", "no-cache")
 	req.Header.Set("Origin", "https://www.hackterms.com")
 	req.Header.Set("Accept-Encoding", "gzip, deflate, br")
@@ -47,24 +50,20 @@ func setHeaders(req *http.Request) {
 	req.Header.Set("X-Requested-With", "XMLHttpRequest")
 	req.Header.Set("Connection", "keep-alive")
 	req.Header.Set("Referer", "https://www.hackterms.com/")
-}
-
-func searchTerm(term string) (*SearchResults, error) {
-	form := `term=` + term
-	req, err := http.NewRequest("POST", "https://www.hackterms.com/search", strings.NewReader(form))
-	if err != nil {
-		return nil, err
-	}
-	setHeaders(req)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return []byte{}, err
 	}
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
+	return ioutil.ReadAll(resp.Body)
+}
 
-	results := &SearchResults{}
+func search(term string) (*searchResults, error) {
+	form := `term=` + term
+	body, _ := POST("https://www.hackterms.com/search", form)
+
+	results := &searchResults{}
 	if err := json.Unmarshal(body, results); err != nil {
 		return nil, err
 	}
@@ -75,22 +74,11 @@ func searchTerm(term string) (*SearchResults, error) {
 	return results, nil
 }
 
-func getDefinition(term string) (*Definitions, error) {
+func getDefinitions(term string) (*definitions, error) {
 	form := `term=` + term + `&user=false`
-	req, err := http.NewRequest("POST", "https://www.hackterms.com/get-definitions", strings.NewReader(form))
-	if err != nil {
-		return nil, err
-	}
-	setHeaders(req)
+	body, _ := POST("https://www.hackterms.com/get-definitions", form)
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	defs := &Definitions{}
+	defs := &definitions{}
 	if err := json.Unmarshal(body, defs); err != nil {
 		return nil, err
 	}
@@ -100,13 +88,13 @@ func getDefinition(term string) (*Definitions, error) {
 	return defs, nil
 }
 
-// findDefinition launches two concurrent reqs.
+// define launches two concurrent reqs.
 // req 1: search for the term, then get the definition (It has to make two req. so slower)
 // req 2: directly get the definition (Just one direct req.)
 // neither will send to the defCh channel unless they get it right
 // we have a timeout if neither finishes
-func findDefinition(term string) string {
-	defCh := make(chan *Definitions, 2)
+func define(term string) string {
+	defCh := make(chan *definitions, 2)
 	// Search then get the definition
 	go func() {
 		results, err := searchTerm(term)
@@ -114,7 +102,7 @@ func findDefinition(term string) string {
 			return
 		}
 		correctTerm := results.Body[0].Name
-		defs, err := getDefinition(correctTerm)
+		defs, err := getDefinitions(correctTerm)
 		if err != nil {
 			return
 		}
@@ -122,38 +110,17 @@ func findDefinition(term string) string {
 	}()
 	// Directly get the definition
 	go func() {
-		defs, err := getDefinition(term)
+		defs, err := getDefinitions(term)
 		if err != nil {
 			return
 		}
 		defCh <- defs
 	}()
-	// concurrently wait on multiple channels
+	// Concurrently wait on multiple channels
 	select {
 	case def := <-defCh:
 		return def.Body[0].Term + ": " + def.Body[0].Body
 	case <-time.After(2000 * time.Millisecond):
 		return "No definitions found."
 	}
-}
-
-type HackTerm struct {
-	oodle.BaseTrigger
-}
-
-func (hackterm *HackTerm) Info() oodle.CommandInfo {
-	return oodle.CommandInfo{
-		Prefix:      ".",
-		Name:        "hackterm",
-		Description: "Hacker Terms",
-		Usage:       ".hackterm <term>",
-	}
-}
-
-func (hackterm *HackTerm) Execute(nick string, args []string) (string, error) {
-	if len(args) < 1 {
-		return "", oodle.ErrUsage
-	}
-	term := strings.Join(args, " ")
-	return findDefinition(term), nil
 }
