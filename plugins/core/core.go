@@ -11,7 +11,7 @@ import (
 )
 
 // Register wires everything up
-func Register(deps oodle.Deps) error {
+func Register(deps *oodle.Deps) error {
 	irc, bot, config, db := deps.IRC, deps.Bot, deps.Config, deps.DB
 	seenCmd, seenTrig := Seen()
 	tellCmd, tellTrig := Tell(irc, db)

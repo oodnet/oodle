@@ -1,12 +1,16 @@
 package main
 
 import (
+	"database/sql"
 	"os"
 
 	"github.com/BurntSushi/toml"
 	"github.com/godwhoa/oodle/bot"
 	"github.com/godwhoa/oodle/oodle"
-	"github.com/godwhoa/oodle/plugins"
+	"github.com/godwhoa/oodle/plugins/core"
+	"github.com/godwhoa/oodle/plugins/hackterm"
+	"github.com/godwhoa/oodle/plugins/webhook"
+	_ "github.com/mattn/go-sqlite3"
 	flag "github.com/ogier/pflag"
 	"github.com/sirupsen/logrus"
 )
@@ -35,26 +39,25 @@ func main() {
 		logger.Fatal("config: len(cooldowns) != len(points)")
 	}
 
-	ircClient := bot.NewIRCClient(logger, config)
-
-	oodleBot := bot.NewBot(logger, ircClient)
-
-	pm, err := NewPM(ircClient, config, oodleBot)
+	db, err := sql.Open("sqlite3", config.DBPath)
 	if err != nil {
 		logger.Fatal(err)
 	}
-	defer pm.db.Close()
 
-	pm.RegisterPlugin("seen", &plugins.Seen{})
-	pm.RegisterPlugin("tell", &plugins.Tell{})
-	pm.RegisterPlugin("echo", &plugins.Echo{})
-	pm.RegisterPlugin("title", &plugins.Title{})
-	pm.RegisterPlugin("give", &plugins.Give{})
-	pm.RegisterPlugin("rep", &plugins.Rep{})
-	pm.RegisterPlugin("rank", &plugins.Rank{})
-	pm.RegisterPlugin("hackterm", &plugins.HackTerm{})
+	ircClient := bot.NewIRCClient(logger, config)
+	oodleBot := bot.NewBot(logger, ircClient)
 
-	webhook := NewWebHook(ircClient, logger, config.Secret)
-	go webhook.Listen(config.WebHookAddr)
+	deps := &oodle.Deps{
+		IRC:    ircClient,
+		Bot:    oodleBot,
+		Logger: logger,
+		Config: config,
+		DB:     db,
+	}
+
+	core.Register(deps)
+	hackterm.Register(deps)
+	webhook.Register(deps)
+
 	logger.Fatal(oodleBot.Start())
 }

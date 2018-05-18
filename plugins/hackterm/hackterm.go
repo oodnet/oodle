@@ -11,7 +11,7 @@ func Register(deps *oodle.Deps) {
 }
 
 func HackTerm() oodle.Command {
-	cmd := oodle.Command{
+	return oodle.Command{
 		Prefix:      ".",
 		Name:        "hackterm",
 		Description: "Hacker Terms",

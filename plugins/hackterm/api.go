@@ -97,7 +97,7 @@ func define(term string) string {
 	defCh := make(chan *definitions, 2)
 	// Search then get the definition
 	go func() {
-		results, err := searchTerm(term)
+		results, err := search(term)
 		if err != nil {
 			return
 		}
