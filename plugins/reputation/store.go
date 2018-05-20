@@ -1,4 +1,4 @@
-package store
+package reputation
 
 import (
 	"time"
@@ -6,71 +6,48 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type UserRep struct {
-	ID     uint      `db:"id"`
-	User   string    `db:"user"`
-	Points int       `db:"points"`
-	Next   time.Time `db:"next"`
-}
 
-func NewRepStore(db *sqlx.DB, cooldowns map[int]time.Duration) *RepStore {
-	store := &RepStore{db: db, cooldowns: cooldowns}
-	store.Migrate()
-	return store
-}
-
+// RepStore stores user reputations
 type RepStore struct {
-	db        *sqlx.DB
-	cooldowns map[int]time.Duration
+	db *sqlx.DB
 }
 
-func (r *RepStore) Migrate() {
-	stmt := `
-	CREATE TABLE IF NOT EXISTS "user_reputations" (
-		"id" integer primary key autoincrement,
-		"user" varchar(255) NOT NULL UNIQUE,
-		"points" integer DEFAULT 0,
-		"next" datetime NOT NULL
-	);
-	`
-	r.db.MustExec(stmt)
+func(r *RepStore) Migrate() {
+	r.db.MustExec(`
+		CREATE TABLE IF NOT EXISTS "user_reputations" (
+			"id" integer primary key autoincrement,
+			"giver" varchar(255) NOT NULL,
+			"reciver" varchar(255) NOT NULL,
+			"point" integer DEFAULT 0,
+			"timestamp" datetime NOT NULL
+		);
+		`
+	)
 }
 
-// Initializes a user if they don't exist
-func initUser(tx *sqlx.Tx, users ...string) error {
-	for _, user := range users {
-		_, err := tx.Exec(`INSERT OR IGNORE INTO user_reputations(user, next) VALUES(?,?);`, user, time.Now().Add(-1*time.Second))
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+// CanGive tells if a user can give and how much time they need to wait
+func (r *RepStore) CanGive(user string, timeout time.Duration) (bool, time.Duration) {
+	var lastGiven time.Time
+	r.db.Select(&lastGiven, `SELECT 'timestamp' FROM 'user_reputations' WHERE giver = ? ORDER BY 'timestamp' DESC LIMIT = 1;`, user)
+	can := time.Now().After(lastGiven.Add(timeout))
+	wait := time.Now().Sub(lastGiven.Add(timeout))
+	return can, wait
 }
 
-func (r *RepStore) Inc(giver, reciver string, point int) error {
-	cooldown := r.cooldowns[point]
-	next := time.Now().Add(cooldown)
+// Points returns total number of points for a given user
+func (r *RepStore) Points(user string) int {
+	points := 0
+	r.db.Select(&point, `SELECT SUM(point) FROM 'user_reputations' WHERE reciver = ?;`, user)
+	return points
+}
+
+// Give stores a rep event into db and returns final points of the reciver
+func (r *RepStore) Give(giver, reciver string, point int) (int, error) {
 	tx := r.db.MustBegin()
-	// initialize giver/reciver if they don't exist
-	if err := initUser(tx, giver, reciver); err != nil {
-		return err
-	}
-	// increment rep for reciver
-	if _, err := tx.Exec(`UPDATE user_reputations SET points = points + ? WHERE user = ?;`, point, reciver); err != nil {
-		return err
-	}
-	// update next for giver
-	if _, err := tx.Exec(`UPDATE user_reputations SET next = ? WHERE user = ?;`, next, giver); err != nil {
-		return err
-	}
-	return tx.Commit()
-}
-
-// GetUserRep gets a UserRep by nick
-func (r *RepStore) GetUserRep(user string) (*UserRep, error) {
-	userRep := &UserRep{}
-	tx := r.db.MustBegin()
-	initUser(tx, user)
-	tx.Get(userRep, `SELECT * FROM user_reputations WHERE user = ?;`, user)
-	return userRep, tx.Commit()
+	point := 0
+	tx.Exec(`
+		INSERT INTO user_reputations(giver, reciver, point, 'timestamp') VALUES(?,?,?,?);`,
+		giver, reciver, point, time.Now())
+	tx.Select(&point, `SELECT SUM(point) FROM 'user_reputations' WHERE reciver = ?;`, reciver)
+	return point, tx.Commit()
 }
