@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/godwhoa/oodle/oodle"
 	"github.com/hako/durafmt"
 )
 
@@ -22,7 +23,7 @@ func FmtDur(d time.Duration) string {
 }
 
 // Alias returns a new command with replaced prefix, name and usage
-func Alias(prefix, name string, cmd Command) Command {
+func Alias(prefix, name string, cmd oodle.Command) oodle.Command {
 	firstFragment := strings.Split(cmd.Usage, " ")[0] // usually it's command's prefix+name
 	usage := strings.Replace(cmd.Usage, firstFragment, prefix+name, 1)
 	cmd.Prefix = prefix
