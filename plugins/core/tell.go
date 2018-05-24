@@ -6,23 +6,9 @@ import (
 	"time"
 
 	"github.com/godwhoa/oodle/oodle"
-	"github.com/hako/durafmt"
+	u "github.com/godwhoa/oodle/utils"
 	"github.com/jmoiron/sqlx"
 )
-
-func fmtTime(t time.Time) string {
-	// gets rid of milliseconds, I think?
-	since := time.Since(t).Truncate(time.Second)
-	// formats it to 1 day etc.
-	return durafmt.Parse(since).String()
-}
-
-func fmtDur(d time.Duration) string {
-	// gets rid of milliseconds, I think?
-	d = d.Truncate(time.Second)
-	// formats it to 1 second etc.
-	return durafmt.Parse(d).String()
-}
 
 // Tell lets users send a msg. to an inactive user
 func Tell(irc oodle.IRCClient, db *sql.DB) (oodle.Command, oodle.Trigger) {
@@ -55,7 +41,7 @@ func Tell(irc oodle.IRCClient, db *sql.DB) (oodle.Command, oodle.Trigger) {
 		}
 		letters := store.GetLetters(nick)
 		for _, l := range letters {
-			irc.Sendf("%s, %s left this message for you: %s\n%s ago", nick, l.From, l.Body, fmtTime(l.When))
+			irc.Sendf("%s, %s left this message for you: %s\n%s ago", nick, l.From, l.Body, u.FmtTime(l.When))
 		}
 		store.Delete(letters)
 	}
