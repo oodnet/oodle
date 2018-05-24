@@ -6,8 +6,9 @@ import (
 	"github.com/godwhoa/oodle/oodle"
 )
 
-func Register(deps *oodle.Deps) {
+func Register(deps *oodle.Deps) error {
 	deps.Bot.Register(HackTerm())
+	return nil
 }
 
 func HackTerm() oodle.Command {
