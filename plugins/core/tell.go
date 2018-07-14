@@ -7,12 +7,11 @@ import (
 
 	"github.com/godwhoa/oodle/oodle"
 	u "github.com/godwhoa/oodle/utils"
-	"github.com/jmoiron/sqlx"
 )
 
 // Tell lets users send a msg. to an inactive user
 func Tell(irc oodle.IRCClient, db *sql.DB) (oodle.Command, oodle.Trigger) {
-	store := NewTellStore(sqlx.NewDb(db, "sqlite3"))
+	store := NewMailBox(db)
 
 	cmd := oodle.Command{
 		Prefix:      ".",
