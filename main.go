@@ -9,11 +9,21 @@ import (
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/godwhoa/oodle/plugins/core"
 	"github.com/godwhoa/oodle/plugins/hackterm"
+	"github.com/godwhoa/oodle/plugins/reputation"
 	"github.com/godwhoa/oodle/plugins/webhook"
 	_ "github.com/mattn/go-sqlite3"
 	flag "github.com/ogier/pflag"
 	"github.com/sirupsen/logrus"
 )
+
+func must(errors ...error) error {
+	for _, err := range errors {
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 func main() {
 	confpath := flag.StringP("config", "c", "config.toml", "Specifies which configfile to use")
@@ -55,9 +65,15 @@ func main() {
 		DB:     db,
 	}
 
-	core.Register(deps)
-	hackterm.Register(deps)
-	webhook.Register(deps)
+	// register plugins and log failure
+	if err := must(
+		core.Register(deps),
+		hackterm.Register(deps),
+		webhook.Register(deps),
+		reputation.Register(deps),
+	); err != nil {
+		logger.Fatal(err)
+	}
 
 	logger.Fatal(oodleBot.Start())
 }
