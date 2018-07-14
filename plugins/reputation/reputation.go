@@ -33,7 +33,13 @@ func Register(deps *oodle.Deps) error {
 
 	cooldowns := parse(deps.Config)
 	store := NewRepStore(deps.DB)
-	g := &Give{irc: deps.IRC, store: store, registeredOnly: deps.Config.RegisteredOnly, cooldowns: cooldowns}
+	g := &Give{
+		inChannel:      deps.IRC.InChannel,
+		isRegistered:   deps.IRC.IsRegistered,
+		store:          store,
+		registeredOnly: deps.Config.RegisteredOnly,
+		cooldowns:      cooldowns,
+	}
 	deps.Bot.Register(
 		Rank(store),
 		oodle.Command{
@@ -72,24 +78,36 @@ func Rank(store *RepStore) oodle.Command {
 }
 
 type Give struct {
-	irc            oodle.IRCClient
-	store          *RepStore
+	inChannel      func(nick string) bool
+	isRegistered   func(nick string) bool
 	registeredOnly bool
+	store          *RepStore
 	cooldowns      map[int]time.Duration
 }
 
+func (g *Give) canGive(giver string) (bool, time.Duration) {
+	point, lastGiven := g.store.LastGiven(giver)
+	timeout := g.cooldowns[point]
+	// fmt.Printf("\npoint: %d timeout: %s\n", point, timeout.String())
+	can := time.Now().After(lastGiven.Add(timeout))
+	wait := lastGiven.Add(timeout).Sub(time.Now())
+	// fmt.Printf("lastgiven + timeout = %s\n", u.FmtTime(lastGiven))
+	// fmt.Printf("wait: %s can: %v", u.FmtDur(wait), can)
+	return can, wait
+}
+
 // validate giver/reciver
-func (g *Give) validateGR(giver, reciver string, timeout time.Duration) string {
+func (g *Give) validateGR(giver, reciver string) string {
 	if giver == reciver {
 		return "You can't give yourself points."
 	}
-	if can, wait := g.store.CanGive(giver, timeout); !can {
+	if can, wait := g.canGive(giver); !can {
 		return "You can't give points just yet. Wait " + u.FmtDur(wait)
 	}
-	if !g.irc.InChannel(reciver) {
+	if !g.inChannel(reciver) {
 		return reciver + " is not in the channel."
 	}
-	if g.registeredOnly && !g.irc.IsRegistered(giver) {
+	if g.registeredOnly && !g.isRegistered(giver) {
 		return "Only registered nicks can give."
 	}
 	return ""
@@ -106,13 +124,12 @@ func (g *Give) give(nick string, args []string) (string, error) {
 	if err != nil {
 		return "First argument need to be an integer.", nil
 	}
-	timeout, ok := g.cooldowns[point]
-	if !ok {
+	if _, ok := g.cooldowns[point]; !ok {
 		return "Invalid point", nil
 	}
 
 	giver, reciver := nick, args[1]
-	if errmsg := g.validateGR(giver, reciver, timeout); errmsg != "" {
+	if errmsg := g.validateGR(giver, reciver); errmsg != "" {
 		return errmsg, nil
 	}
 
@@ -125,13 +142,12 @@ func (g *Give) rep(nick string, args []string) (string, error) {
 		return "", oodle.ErrUsage
 	}
 
-	timeout, ok := g.cooldowns[1]
-	if !ok {
+	if _, ok := g.cooldowns[1]; !ok {
 		return "Invalid point", nil
 	}
 
 	giver, reciver := nick, args[0]
-	if errmsg := g.validateGR(giver, reciver, timeout); errmsg != "" {
+	if errmsg := g.validateGR(giver, reciver); errmsg != "" {
 		return errmsg, nil
 	}
 

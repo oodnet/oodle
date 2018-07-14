@@ -32,19 +32,20 @@ func (r *RepStore) Migrate() {
 		);`)
 }
 
-// CanGive tells if a user can give and how much time they need to wait
-func (r *RepStore) CanGive(user string, timeout time.Duration) (bool, time.Duration) {
+// LastGiven returns when/which point they last gave
+func (r *RepStore) LastGiven(user string) (int, time.Time) {
+	var point int
 	var lastGiven time.Time
-	r.db.Select(&lastGiven, `SELECT 'timestamp' FROM 'user_reputations' WHERE giver = ? ORDER BY 'timestamp' DESC LIMIT = 1;`, user)
-	can := time.Now().After(lastGiven.Add(timeout))
-	wait := time.Now().Sub(lastGiven.Add(timeout))
-	return can, wait
+	r.db.QueryRow(`SELECT point, timestamp FROM 'user_reputations' WHERE giver = ? ORDER BY timestamp DESC LIMIT 1;`, user).
+		Scan(&point, &lastGiven)
+	return point, lastGiven
 }
 
 // Points returns total number of points for a given user
 func (r *RepStore) Points(user string) int {
 	points := 0
-	r.db.Select(&points, `SELECT SUM(point) FROM 'user_reputations' WHERE reciver = ?;`, user)
+	r.db.QueryRow(`SELECT SUM(point) FROM 'user_reputations' WHERE reciver = ?;`, user).
+		Scan(&points)
 	return points
 }
 
@@ -55,6 +56,7 @@ func (r *RepStore) Give(giver, reciver string, point int) (int, error) {
 	tx.Exec(`
 		INSERT INTO user_reputations(giver, reciver, point, 'timestamp') VALUES(?,?,?,?);`,
 		giver, reciver, point, time.Now())
-	tx.Select(&reciverPoints, `SELECT SUM(point) FROM 'user_reputations' WHERE reciver = ?;`, reciver)
+	tx.QueryRow(`SELECT SUM(point) FROM 'user_reputations' WHERE reciver = ?;`, reciver).
+		Scan(&reciverPoints)
 	return reciverPoints, tx.Commit()
 }
