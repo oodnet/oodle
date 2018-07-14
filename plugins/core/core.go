@@ -2,12 +2,13 @@ package core
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/godwhoa/oodle/oodle"
+	u "github.com/godwhoa/oodle/utils"
+	"mvdan.cc/xurls"
 )
 
 // Register wires everything up
@@ -69,7 +70,7 @@ func Seen() (oodle.Command, oodle.Trigger) {
 				return "", oodle.ErrUsage
 			}
 			if lastSeen, ok := store[args[0]]; ok {
-				return fmt.Sprintf("%s was last seen %s ago.", args[0], fmtTime(lastSeen)), nil
+				return fmt.Sprintf("%s was last seen %s ago.", args[0], u.FmtTime(lastSeen)), nil
 			}
 			return fmt.Sprintf("No logs for %s", args[0]), nil
 		},
@@ -89,7 +90,7 @@ func Seen() (oodle.Command, oodle.Trigger) {
 
 // TitleScraper fetches, scrapes and sends titles whenever it sees urls
 func TitleScraper(irc oodle.IRCClient) oodle.Trigger {
-	urlReg := regexp.MustCompile(`https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)`)
+	urlReg := xurls.Strict
 
 	return func(event interface{}) {
 		message, ok := event.(oodle.Message)

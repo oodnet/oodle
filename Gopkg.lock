@@ -89,9 +89,15 @@
   ]
   revision = "37707fdb30a5b38865cfb95e5aab41707daec7fd"
 
+[[projects]]
+  name = "mvdan.cc/xurls"
+  packages = ["."]
+  revision = "d315b61cf6727664f310fa87b3197e9faf2a8513"
+  version = "v1.1.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "28a5bbb5d4fd3f8edcdb526071f8e9ce58edb4796331cf0f73ff4eb4baa48812"
+  inputs-digest = "eb859b8c61e7ec69afdc96e926c69b5c35d8fc84197965ee2d45801bbbf0020d"
   solver-name = "gps-cdcl"
   solver-version = 1
