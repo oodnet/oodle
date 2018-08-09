@@ -11,8 +11,8 @@ import (
 )
 
 func Register(deps *oodle.Deps) error {
-	wh := &webhook{irc: deps.IRC, log: deps.Logger, secret: deps.Config.Secret}
-	go wh.Listen(deps.Config.WebHookAddr)
+	hook := &webhook{irc: deps.IRC, log: deps.Logger, secret: deps.Config.Secret}
+	go hook.Listen(deps.Config.WebHookAddr)
 	return nil
 }
 
