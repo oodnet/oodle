@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -127,6 +128,23 @@ func Seen() (oodle.Command, oodle.Trigger) {
 	return cmd, trigger
 }
 
+func newDocument(url string) (*goquery.Document, error) {
+	// Load the URL
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("User-Agent", "Oodlebot/1.0")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return goquery.NewDocumentFromResponse(res)
+}
+
 // TitleScraper fetches, scrapes and sends titles whenever it sees urls
 func TitleScraper(irc oodle.IRCClient) oodle.Trigger {
 	urlReg := xurls.Strict
@@ -139,7 +157,7 @@ func TitleScraper(irc oodle.IRCClient) oodle.Trigger {
 		urls := urlReg.FindAllString(message.Msg, -1)
 		for _, url := range urls {
 			if url != "" {
-				doc, err := goquery.NewDocument(url)
+				doc, err := newDocument(url)
 				if err != nil {
 					return
 				}
