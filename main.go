@@ -73,5 +73,8 @@ func main() {
 		logger.Fatal(err)
 	}
 
+	oodleBot.Register(core.Help(oodleBot))
+	oodleBot.Register(core.List(oodleBot))
+
 	logger.Fatal(oodleBot.Start())
 }

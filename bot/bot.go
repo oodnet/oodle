@@ -53,26 +53,6 @@ func (bot *Bot) handleCommand(nick string, message string) {
 		return
 	}
 
-	// TODO: make them regular commands
-	// TODO: also needs to work with custom commands
-	if args[0] == ".help" && len(args) == 2 {
-		if command, ok := bot.commandMap[args[1]]; ok {
-			bot.ircClient.Sendf("Desciption: %s\nUsage: %s", command.Description, command.Usage)
-			return
-		}
-		bot.ircClient.Send("Unknown command.")
-		return
-	}
-	if args[0] == ".list" && len(args) == 1 {
-		buf := ""
-		for name := range bot.commandMap {
-			buf += name + ", "
-		}
-		buf += ".list, .help"
-		bot.ircClient.Send(buf)
-		return
-	}
-
 	command, ok := bot.commandMap[args[0]]
 	if !ok {
 		return
@@ -83,7 +63,7 @@ func (bot *Bot) handleCommand(nick string, message string) {
 	case oodle.ErrUsage:
 		bot.ircClient.Sendf("Usage: " + command.Usage)
 	case nil:
-		bot.ircClient.Send(reply)
+		bot.ircClient.Sendf(reply)
 	default:
 		bot.log.Error(err)
 	}
@@ -108,4 +88,12 @@ func (bot *Bot) Register(plugins ...interface{}) {
 			bot.log.Warnf("%+v is neither a Command or a Trigger.", plugin)
 		}
 	}
+}
+
+func (bot *Bot) Commands() []oodle.Command {
+	cmds := []oodle.Command{}
+	for _, cmd := range bot.commandMap {
+		cmds = append(cmds, cmd)
+	}
+	return cmds
 }

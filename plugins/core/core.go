@@ -27,6 +27,45 @@ func Register(deps *oodle.Deps) error {
 	return nil
 }
 
+// Help gives help info for commands
+func Help(bot oodle.Bot) oodle.Command {
+	return oodle.Command{
+		Prefix:      ".",
+		Name:        "help",
+		Description: "Give description and usage for a command",
+		Usage:       ".help <command name>",
+		Fn: func(nick string, args []string) (reply string, err error) {
+			if len(args) < 1 {
+				return "", oodle.ErrUsage
+			}
+			for _, cmd := range bot.Commands() {
+				if cmd.Name == args[0] {
+					return fmt.Sprintf("Desciption: %s\nUsage: %s", cmd.Description, cmd.Usage), nil
+				}
+			}
+			return "No command named " + args[0], nil
+		},
+	}
+}
+
+// List lists all the commands
+func List(bot oodle.Bot) oodle.Command {
+	return oodle.Command{
+		Prefix:      ".",
+		Name:        "list",
+		Description: "Lists all the commands",
+		Usage:       ".help <command name>",
+		Fn: func(nick string, args []string) (reply string, err error) {
+			buf := ""
+			for _, cmd := range bot.Commands() {
+				buf += fmt.Sprintf("%s: %s\n", cmd.Name, cmd.Usage)
+			}
+			buf = strings.TrimSuffix(buf, "\n")
+			return buf, nil
+		},
+	}
+}
+
 // Echo echoes back your nick!
 func Echo(botNick string) oodle.Command {
 	return oodle.Command{
