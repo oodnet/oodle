@@ -149,9 +149,22 @@ func newDocument(url string) (*goquery.Document, error) {
 	return goquery.NewDocumentFromResponse(res)
 }
 
+func checker() func(url string) bool {
+	blacklist := viper.GetStringSlice("url_blacklist")
+	return func(url string) bool {
+		for _, burl := range blacklist {
+			if strings.Contains(url, burl) {
+				return true
+			}
+		}
+		return false
+	}
+}
+
 // TitleScraper fetches, scrapes and sends titles whenever it sees urls
 func TitleScraper(irc oodle.IRCClient) oodle.Trigger {
 	urlReg := xurls.Strict
+	isblacklisted := checker()
 
 	return func(event interface{}) {
 		message, ok := event.(oodle.Message)
@@ -160,7 +173,7 @@ func TitleScraper(irc oodle.IRCClient) oodle.Trigger {
 		}
 		urls := urlReg.FindAllString(message.Msg, -1)
 		for _, url := range urls {
-			if url != "" {
+			if url != "" && !isblacklisted(url) {
 				doc, err := newDocument(url)
 				if err != nil {
 					return
