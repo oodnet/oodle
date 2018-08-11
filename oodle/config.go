@@ -1,18 +1,15 @@
 package oodle
 
-type Config struct {
-	Nick           string            `toml:"nick"`
-	Name           string            `toml:"name"`
-	User           string            `toml:"user"`
-	Server         string            `toml:"server"`
-	Port           int               `toml:"port"`
-	Channel        string            `toml:"channel"`
-	Retry          bool              `toml:"retry"`
-	SASLUser       string            `toml:"sasl_user"`
-	SASLPass       string            `toml:"sasl_pass"`
-	DBPath         string            `toml:"dbpath"`
-	WebHookAddr    string            `toml:"webhook_addr"`
-	Secret         string            `toml:"secret"`
-	Commands       []string          `toml:"commands"`
-	CustomCommands map[string]string `toml:"custom_commands"`
+import "github.com/spf13/viper"
+
+func SetDefaults() {
+	viper.SetDefault("nick", "oodle-dev")
+	viper.SetDefault("name", "oodle-dev")
+	viper.SetDefault("server", "chat.freenode.net")
+	viper.SetDefault("server", "chat.freenode.net")
+	viper.SetDefault("port", 6667)
+	viper.SetDefault("channel", "##oodle-test")
+	viper.SetDefault("retry", true)
+	viper.SetDefault("dbpath", "store.sqlite")
+	viper.SetDefault("webhook_addr", "127.0.0.1:8000")
 }

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"os"
 
-	"github.com/BurntSushi/toml"
 	"github.com/godwhoa/oodle/bot"
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/godwhoa/oodle/plugins/core"
@@ -13,6 +12,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	flag "github.com/ogier/pflag"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 func must(errors ...error) error {
@@ -40,12 +40,14 @@ func main() {
 		os.Exit(0)
 	}
 
-	config := &oodle.Config{}
-	if _, err := toml.DecodeFile(*confpath, config); err != nil {
+	viper.SetConfigFile(*confpath)
+	if err := viper.ReadInConfig(); err != nil {
 		logger.Fatal(err)
 	}
 
-	db, err := sql.Open("sqlite3", config.DBPath)
+	oodle.SetDefaults()
+
+	db, err := sql.Open("sqlite3", viper.GetString("dbpath"))
 	if err != nil {
 		logger.Fatal(err)
 	}
