@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/godwhoa/oodle/oodle"
-
 	"github.com/sirupsen/logrus"
 )
 
@@ -34,7 +32,7 @@ type IRCClient interface {
 type Bot interface {
 	// Register registers Trigger/Command only.
 	Register(plugins ...interface{})
-	Commands() []oodle.Command
+	Commands() []Command
 }
 
 // Deps is a container for common dependencies

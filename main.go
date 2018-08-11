@@ -44,9 +44,6 @@ func main() {
 	if _, err := toml.DecodeFile(*confpath, config); err != nil {
 		logger.Fatal(err)
 	}
-	if len(config.Cooldowns) != len(config.Points) {
-		logger.Fatal("config: len(cooldowns) != len(points)")
-	}
 
 	db, err := sql.Open("sqlite3", config.DBPath)
 	if err != nil {

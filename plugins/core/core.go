@@ -54,7 +54,7 @@ func List(bot oodle.Bot) oodle.Command {
 		Prefix:      ".",
 		Name:        "list",
 		Description: "Lists all the commands",
-		Usage:       ".help <command name>",
+		Usage:       ".list",
 		Fn: func(nick string, args []string) (reply string, err error) {
 			buf := ""
 			for _, cmd := range bot.Commands() {
