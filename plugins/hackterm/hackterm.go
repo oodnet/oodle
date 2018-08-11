@@ -15,7 +15,7 @@ func HackTerm() oodle.Command {
 	return oodle.Command{
 		Prefix:      ".",
 		Name:        "hackterm",
-		Description: "Hacker Terms",
+		Description: "Fetches definitions from hackerterms.com",
 		Usage:       ".hackterm <term>",
 		Fn: func(nick string, args []string) (string, error) {
 			if len(args) < 1 {

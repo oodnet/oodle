@@ -2,10 +2,12 @@ package utils
 
 import (
 	"strings"
+	"testing"
 	"time"
 
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/hako/durafmt"
+	"github.com/stretchr/testify/assert"
 )
 
 func FmtTime(t time.Time) string {
@@ -30,4 +32,21 @@ func Alias(prefix, name string, cmd oodle.Command) oodle.Command {
 	cmd.Name = name
 	cmd.Usage = usage
 	return cmd
+}
+
+// TestCase represents a test case for an oodle.Command
+type TestCase struct {
+	Nick  string
+	Args  []string
+	Reply string
+	Err   error
+}
+
+// RunCases runs given tests on an oodle.Command
+func RunCases(t *testing.T, cmd oodle.Command, tests []TestCase) {
+	for _, tt := range tests {
+		reply, err := cmd.Fn(tt.Nick, tt.Args)
+		assert.Equal(t, reply, tt.Reply)
+		assert.Equal(t, err, tt.Err)
+	}
 }

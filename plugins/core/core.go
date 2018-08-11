@@ -61,7 +61,7 @@ func List(bot oodle.Bot) oodle.Command {
 		Fn: func(nick string, args []string) (reply string, err error) {
 			buf := ""
 			for _, cmd := range bot.Commands() {
-				buf += fmt.Sprintf("%s: %s\n", cmd.Name, cmd.Usage)
+				buf += fmt.Sprintf("%s: %s\n", cmd.Name, cmd.Description)
 			}
 			buf = strings.TrimSuffix(buf, "\n")
 			return buf, nil
@@ -75,7 +75,7 @@ func Echo() oodle.Command {
 	return oodle.Command{
 		Prefix:      "",
 		Name:        botNick + "!",
-		Description: "Exlamates your nick back!",
+		Description: "Exclamates your nick back!",
 		Usage:       botNick + "!",
 		Fn: func(nick string, args []string) (string, error) {
 			return nick + "!", nil
