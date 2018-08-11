@@ -52,14 +52,13 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	ircClient := bot.NewIRCClient(logger, config)
+	ircClient := bot.NewIRCClient(logger)
 	oodleBot := bot.NewBot(logger, ircClient)
 
 	deps := &oodle.Deps{
 		IRC:    ircClient,
 		Bot:    oodleBot,
 		Logger: logger,
-		Config: config,
 		DB:     db,
 	}
 
