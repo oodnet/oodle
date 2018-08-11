@@ -5,14 +5,16 @@ import (
 	"html"
 	"net/http"
 
+	"github.com/spf13/viper"
+
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/lrstanley/girc"
 	"github.com/sirupsen/logrus"
 )
 
 func Register(deps *oodle.Deps) error {
-	hook := &webhook{irc: deps.IRC, log: deps.Logger, secret: deps.Config.Secret}
-	go hook.Listen(deps.Config.WebHookAddr)
+	hook := &webhook{irc: deps.IRC, log: deps.Logger, secret: viper.GetString("secret")}
+	go hook.Listen(viper.GetString("webhook_addr"))
 	return nil
 }
 

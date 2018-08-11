@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/viper"
+
 	"github.com/PuerkitoBio/goquery"
 	"github.com/godwhoa/oodle/oodle"
 	u "github.com/godwhoa/oodle/utils"
@@ -14,12 +16,12 @@ import (
 
 // Register wires everything up
 func Register(deps *oodle.Deps) error {
-	irc, bot, config, db := deps.IRC, deps.Bot, deps.Config, deps.DB
+	irc, bot, db := deps.IRC, deps.Bot, deps.DB
 	seenCmd, seenTrig := Seen()
 	tellCmd, tellTrig := Tell(irc, db)
 	bot.Register(
-		Echo(config.Nick),
-		CustomCommands(config.CustomCommands, irc),
+		Echo(),
+		CustomCommands(irc),
 		TitleScraper(irc),
 		seenCmd, seenTrig,
 		tellCmd, tellTrig,
@@ -68,7 +70,8 @@ func List(bot oodle.Bot) oodle.Command {
 }
 
 // Echo echoes back your nick!
-func Echo(botNick string) oodle.Command {
+func Echo() oodle.Command {
+	botNick := viper.GetString("nick")
 	return oodle.Command{
 		Prefix:      "",
 		Name:        botNick + "!",
@@ -81,7 +84,8 @@ func Echo(botNick string) oodle.Command {
 }
 
 // CustomCommands lets you make custom commands via. config
-func CustomCommands(commands map[string]string, irc oodle.IRCClient) oodle.Trigger {
+func CustomCommands(irc oodle.IRCClient) oodle.Trigger {
+	commands := viper.GetStringMapString("custom_commands")
 	return func(event interface{}) {
 		message, ok := event.(oodle.Message)
 		if !ok {

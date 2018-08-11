@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/viper"
+
 	"github.com/cenkalti/backoff"
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/lrstanley/girc"
@@ -27,17 +29,17 @@ type IRCClient struct {
 	log       *logrus.Logger
 }
 
-func NewIRCClient(log *logrus.Logger, conf *oodle.Config) *IRCClient {
+func NewIRCClient(log *logrus.Logger) *IRCClient {
 	return &IRCClient{
-		Server:   conf.Server,
-		Port:     conf.Port,
-		Channel:  conf.Channel,
-		Nick:     conf.Nick,
-		Name:     conf.Name,
-		User:     conf.User,
-		SASLUser: conf.SASLUser,
-		SASLPass: conf.SASLPass,
-		Retry:    conf.Retry,
+		Server:   viper.GetString("server"),
+		Port:     viper.GetInt("port"),
+		Channel:  viper.GetString("channel"),
+		Nick:     viper.GetString("nick"),
+		Name:     viper.GetString("name"),
+		User:     viper.GetString("user"),
+		SASLUser: viper.GetString("sasl_user"),
+		SASLPass: viper.GetString("sasl_pass"),
+		Retry:    viper.GetBool("retry"),
 		log:      log,
 	}
 }

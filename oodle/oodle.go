@@ -40,6 +40,5 @@ type Deps struct {
 	IRC    IRCClient
 	Bot    Bot
 	DB     *sql.DB
-	Config *Config
 	Logger *logrus.Logger
 }
