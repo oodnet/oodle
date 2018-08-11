@@ -9,7 +9,6 @@ import (
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/godwhoa/oodle/plugins/core"
 	"github.com/godwhoa/oodle/plugins/hackterm"
-	"github.com/godwhoa/oodle/plugins/reputation"
 	"github.com/godwhoa/oodle/plugins/webhook"
 	_ "github.com/mattn/go-sqlite3"
 	flag "github.com/ogier/pflag"
@@ -70,7 +69,6 @@ func main() {
 		core.Register(deps),
 		hackterm.Register(deps),
 		webhook.Register(deps),
-		reputation.Register(deps),
 	); err != nil {
 		logger.Fatal(err)
 	}
