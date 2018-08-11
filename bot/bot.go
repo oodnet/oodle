@@ -3,6 +3,8 @@ package bot
 import (
 	"strings"
 
+	"github.com/spf13/viper"
+
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/lrstanley/girc"
 	"github.com/sirupsen/logrus"
@@ -76,11 +78,24 @@ func (bot *Bot) handleCommand(nick string, message string) {
 	}).Debug("CommandExec")
 }
 
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
 func (bot *Bot) Register(plugins ...interface{}) {
+	disabled := viper.GetStringSlice("disabled_commands")
 	for _, plugin := range plugins {
 		switch plugin.(type) {
 		case oodle.Command:
 			cmd := plugin.(oodle.Command)
+			if contains(disabled, cmd.Name) {
+				continue
+			}
 			bot.commandMap[cmd.Prefix+cmd.Name] = cmd
 		case oodle.Trigger:
 			bot.triggers = append(bot.triggers, plugin.(oodle.Trigger))
