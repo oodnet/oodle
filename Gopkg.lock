@@ -4,14 +4,14 @@
 [[projects]]
   name = "github.com/PuerkitoBio/goquery"
   packages = ["."]
-  revision = "09540e565986583836b5fc792fe951ec5fd201dd"
-  version = "v1.3.0"
+  revision = "dc2ec5c7ca4d9aae063b79b9f581dd3ea6afd2b2"
+  version = "v1.4.1"
 
 [[projects]]
-  branch = "master"
   name = "github.com/andybalholm/cascadia"
   packages = ["."]
-  revision = "349dd0209470eabd9514242c688c403c0926d266"
+  revision = "901648c87902174f774fac311d7f176f8647bdaa"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/cenkalti/backoff"
@@ -35,7 +35,7 @@
   branch = "master"
   name = "github.com/hako/durafmt"
   packages = ["."]
-  revision = "5af426b795479494ca166afe1d4c4886ebda6879"
+  revision = "7b7ae1e72eade09dbc9c2cfba3e6c4bae7b8bcac"
 
 [[projects]]
   branch = "master"
@@ -61,13 +61,13 @@
     ".",
     "reflectx"
   ]
-  revision = "cf35089a197953c69420c8d0cecda90809764b1d"
+  revision = "0dae4fefe7c0e190f7b5a78dac28a1c82cc8d849"
 
 [[projects]]
   branch = "master"
   name = "github.com/lrstanley/girc"
   packages = ["."]
-  revision = "ab3d8a3000c12b1f303cbe3b0fc06e17669879be"
+  revision = "102f17f86306c2152a8c6188f9bb8b0e7288de31"
 
 [[projects]]
   name = "github.com/magiconair/properties"
@@ -78,8 +78,8 @@
 [[projects]]
   name = "github.com/mattn/go-sqlite3"
   packages = ["."]
-  revision = "6c771bb9887719704b210e87e934f08be014bdb1"
-  version = "v1.6.0"
+  revision = "25ecb14adfc7543176f7d85291ec7dba82c6f7e4"
+  version = "v1.9.0"
 
 [[projects]]
   branch = "master"
@@ -108,8 +108,8 @@
 [[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
-  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
-  version = "v1.0.4"
+  revision = "3e01752db0189b9157070a0e1668a620f9a85da2"
+  version = "v1.0.6"
 
 [[projects]]
   name = "github.com/spf13/afero"
@@ -154,7 +154,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "5119cf507ed5294cc409c092980c7497ee5d6fd2"
+  revision = "de0752318171da717af4ce24d0a2e8626afaeb11"
 
 [[projects]]
   branch = "master"
@@ -164,7 +164,7 @@
     "html",
     "html/atom"
   ]
-  revision = "f5dfe339be1d06f81b22525fe34671ee7d2c8904"
+  revision = "c39426892332e1bb5ec0a434a079bf82f5d30c54"
 
 [[projects]]
   branch = "master"
@@ -173,7 +173,7 @@
     "unix",
     "windows"
   ]
-  revision = "37707fdb30a5b38865cfb95e5aab41707daec7fd"
+  revision = "98c5dad5d1a0e8a73845ecc8897d0bd56586511d"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -203,6 +203,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c916bb8a7316ca75b850fbdb2a2a232748088feba34c92f0ec7e9e225d785276"
+  inputs-digest = "17d9ec7a026fa9cabdd58e6c15412a99d05792823fc55ee4c4e1b78575192c97"
   solver-name = "gps-cdcl"
   solver-version = 1

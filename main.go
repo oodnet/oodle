@@ -8,6 +8,7 @@ import (
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/godwhoa/oodle/plugins/core"
 	"github.com/godwhoa/oodle/plugins/hackterm"
+	"github.com/godwhoa/oodle/plugins/sed"
 	"github.com/godwhoa/oodle/plugins/webhook"
 	_ "github.com/mattn/go-sqlite3"
 	flag "github.com/ogier/pflag"
