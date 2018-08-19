@@ -23,6 +23,7 @@ func Register(deps *oodle.Deps) error {
 		Echo(),
 		CustomCommands(irc),
 		TitleScraper(irc),
+		Version(),
 		List(bot),
 		Help(bot),
 		seenCmd, seenTrig,
@@ -30,6 +31,18 @@ func Register(deps *oodle.Deps) error {
 	)
 
 	return nil
+}
+
+func Version() oodle.Command {
+	return oodle.Command{
+		Prefix:      ".",
+		Name:        "version",
+		Description: "Shows version and commit",
+		Usage:       ".version",
+		Fn: func(nick string, args []string) (reply string, err error) {
+			return fmt.Sprintf("Version: %s Commit: %s", oodle.Version, oodle.Commit), nil
+		},
+	}
 }
 
 // Help gives help info for commands
