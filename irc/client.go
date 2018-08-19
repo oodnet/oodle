@@ -1,4 +1,4 @@
-package bot
+package irc
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type IRCClient struct {
+type Config struct {
 	Server   string
 	Port     int
 	Channel  string
@@ -23,14 +23,21 @@ type IRCClient struct {
 	SASLUser string
 	SASLPass string
 	Retry    bool
+}
 
+// IRCClient is a thin wrapper around girc client
+type IRCClient struct {
+	nick      string
+	channel   string
+	cfg       *Config
 	callbacks []func(event interface{})
 	client    *girc.Client
 	log       *logrus.Logger
 }
 
 func NewIRCClient(log *logrus.Logger) *IRCClient {
-	return &IRCClient{
+
+	config := &Config{
 		Server:   viper.GetString("server"),
 		Port:     viper.GetInt("port"),
 		Channel:  viper.GetString("channel"),
@@ -40,21 +47,27 @@ func NewIRCClient(log *logrus.Logger) *IRCClient {
 		SASLUser: viper.GetString("sasl_user"),
 		SASLPass: viper.GetString("sasl_pass"),
 		Retry:    viper.GetBool("retry"),
-		log:      log,
+	}
+
+	return &IRCClient{
+		cfg:     config,
+		nick:    config.Nick,
+		channel: config.Channel,
+		log:     log,
 	}
 }
 
 func (irc *IRCClient) Connect() error {
 	gircConf := girc.Config{
-		Server:      irc.Server,
-		Port:        irc.Port,
-		Nick:        irc.Nick,
-		User:        irc.User,
-		Name:        irc.Name,
+		Server:      irc.cfg.Server,
+		Port:        irc.cfg.Port,
+		Nick:        irc.cfg.Nick,
+		User:        irc.cfg.User,
+		Name:        irc.cfg.Name,
 		RecoverFunc: func(_ *girc.Client, e *girc.HandlerError) { irc.log.Errorf("%+v", e) },
 	}
-	if irc.SASLUser != "" && irc.SASLPass != "" {
-		gircConf.SASL = &girc.SASLPlain{User: irc.SASLUser, Pass: irc.SASLPass}
+	if irc.cfg.SASLUser != "" && irc.cfg.SASLPass != "" {
+		gircConf.SASL = &girc.SASLPlain{User: irc.cfg.SASLUser, Pass: irc.cfg.SASLPass}
 	}
 
 	client := girc.New(gircConf)
@@ -63,7 +76,7 @@ func (irc *IRCClient) Connect() error {
 	irc.client = client
 
 	err := client.Connect()
-	if _, ok := err.(*girc.ErrInvalidConfig); ok || !irc.Retry {
+	if _, ok := err.(*girc.ErrInvalidConfig); ok || !irc.cfg.Retry {
 		return err
 	}
 	return backoff.RetryNotify(client.Connect, backoff.NewExponentialBackOff(), func(err error, dur time.Duration) {
@@ -79,17 +92,17 @@ func (irc *IRCClient) Close() {
 
 func (irc *IRCClient) onConnect(c *girc.Client, e girc.Event) {
 	irc.log.WithFields(logrus.Fields{
-		"server":  irc.Server,
-		"port":    irc.Port,
-		"channel": irc.Channel,
+		"server":  irc.cfg.Server,
+		"port":    irc.cfg.Port,
+		"channel": irc.cfg.Channel,
 		"nick":    c.GetNick(),
 	}).Info("Connected!")
-	c.Cmd.Join(irc.Channel)
+	c.Cmd.Join(irc.cfg.Channel)
 }
 
 // Simplifies and sends the events
 func (irc *IRCClient) onAll(c *girc.Client, e girc.Event) {
-	if e.IsFromUser() || e.Source == nil || e.Source.Name == irc.Nick {
+	if e.IsFromUser() || e.Source == nil || e.Source.Name == irc.cfg.Nick {
 		return
 	}
 	nick, msg := e.Source.Name, e.Trailing
@@ -103,7 +116,7 @@ func (irc *IRCClient) onAll(c *girc.Client, e girc.Event) {
 	}
 }
 
-// Sends and event to all callbacks
+// Sends an event to all callbacks
 func (irc *IRCClient) sendEvent(event interface{}) {
 	for _, callback := range irc.callbacks {
 		callback(event)
@@ -117,14 +130,16 @@ func (irc *IRCClient) OnEvent(callback func(event interface{})) {
 
 // Send sends an msg to the configured channel
 func (irc *IRCClient) Send(message string) {
-	irc.client.Cmd.Message(irc.Channel, message)
+	irc.client.Cmd.Message(irc.cfg.Channel, message)
 }
 
+// InChannel checks if a user is in the channel
 func (irc *IRCClient) InChannel(nick string) bool {
 	user := irc.client.LookupUser(nick)
-	return user != nil && user.InChannel(irc.Channel)
+	return user != nil && user.InChannel(irc.cfg.Channel)
 }
 
+// IsRegistered checks if a user is registered
 func (irc *IRCClient) IsRegistered(nick string) bool {
 	user := irc.client.LookupUser(nick)
 	return user != nil && user.Extras.Account != ""
@@ -134,6 +149,6 @@ func (irc *IRCClient) IsRegistered(nick string) bool {
 func (irc *IRCClient) Sendf(format string, a ...interface{}) {
 	message := fmt.Sprintf(format, a...)
 	for _, msg := range strings.Split(message, "\n") {
-		irc.client.Cmd.Message(irc.Channel, msg)
+		irc.client.Cmd.Message(irc.cfg.Channel, msg)
 	}
 }

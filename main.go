@@ -5,10 +5,10 @@ import (
 	"os"
 
 	"github.com/godwhoa/oodle/bot"
+	"github.com/godwhoa/oodle/irc"
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/godwhoa/oodle/plugins/core"
 	"github.com/godwhoa/oodle/plugins/hackterm"
-	"github.com/godwhoa/oodle/plugins/sed"
 	"github.com/godwhoa/oodle/plugins/webhook"
 	_ "github.com/mattn/go-sqlite3"
 	flag "github.com/ogier/pflag"
@@ -53,7 +53,7 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	ircClient := bot.NewIRCClient(logger)
+	ircClient := irc.NewIRCClient(logger)
 	oodleBot := bot.NewBot(logger, ircClient)
 
 	deps := &oodle.Deps{

@@ -22,8 +22,11 @@ type Trigger func(event interface{})
 
 // IRCClient is a simplified client given to plugins.
 type IRCClient interface {
+	Connect() error
+	Close()
 	IsRegistered(nick string) bool
 	InChannel(nick string) bool
+	OnEvent(callback func(event interface{}))
 	Send(message string)
 	Sendf(format string, a ...interface{})
 }

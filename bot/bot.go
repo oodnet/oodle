@@ -6,22 +6,20 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/godwhoa/oodle/oodle"
-	"github.com/lrstanley/girc"
 	"github.com/sirupsen/logrus"
 )
 
 type Bot struct {
 	triggers   []oodle.Trigger
 	commandMap map[string]oodle.Command
-	client     *girc.Client
 	log        *logrus.Logger
-	ircClient  *IRCClient
+	irc        oodle.IRCClient
 }
 
-func NewBot(logger *logrus.Logger, ircClient *IRCClient) *Bot {
+func NewBot(logger *logrus.Logger, ircClient oodle.IRCClient) *Bot {
 	return &Bot{
 		log:        logger,
-		ircClient:  ircClient,
+		irc:        ircClient,
 		commandMap: make(map[string]oodle.Command),
 	}
 }
@@ -29,18 +27,18 @@ func NewBot(logger *logrus.Logger, ircClient *IRCClient) *Bot {
 // Start makes a conn., stats a readloop and uses the config
 func (bot *Bot) Start() error {
 	bot.log.Info("Connecting...")
-	bot.ircClient.OnEvent(func(event interface{}) {
+	bot.irc.OnEvent(func(event interface{}) {
 		if msg, ok := event.(oodle.Message); ok {
 			bot.handleCommand(msg.Nick, msg.Msg)
 		}
 	})
-	bot.ircClient.OnEvent(bot.relayTrigger)
-	return bot.ircClient.Connect()
+	bot.irc.OnEvent(bot.relayTrigger)
+	return bot.irc.Connect()
 }
 
 // Stop stops the bot in a graceful manner
 func (bot *Bot) Stop() {
-	bot.ircClient.Close()
+	bot.irc.Close()
 }
 
 func (bot *Bot) relayTrigger(event interface{}) {
@@ -63,9 +61,9 @@ func (bot *Bot) handleCommand(nick string, message string) {
 	reply, err := command.Fn(nick, args[1:])
 	switch err {
 	case oodle.ErrUsage:
-		bot.ircClient.Sendf("Usage: " + command.Usage)
+		bot.irc.Sendf("Usage: " + command.Usage)
 	case nil:
-		bot.ircClient.Sendf(reply)
+		bot.irc.Sendf(reply)
 	default:
 		bot.log.Error(err)
 	}
