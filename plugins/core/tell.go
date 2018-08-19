@@ -16,7 +16,7 @@ func Tell(irc oodle.IRCClient, db *sql.DB) (oodle.Command, oodle.Trigger) {
 	cmd := oodle.Command{
 		Prefix:      ".",
 		Name:        "tell",
-		Description: "Lets you send a msg. to an inactive user.\nIt will notify them once they are active.",
+		Description: "Lets you send a msg. to an inactive user. It will notify them once they are active.",
 		Usage:       ".tell <to> <msg>",
 		Fn: func(nick string, args []string) (string, error) {
 			if len(args) < 2 {
