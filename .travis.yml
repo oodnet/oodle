@@ -1,6 +1,6 @@
 language: go
 go:
-  - 1.10
+  - "1.10"
 before_install:
   - sudo apt-get install gcc-4.8-arm-linux-gnueabihf
   - go get -u github.com/golang/dep/cmd/dep
