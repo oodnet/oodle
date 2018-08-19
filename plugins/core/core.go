@@ -23,6 +23,8 @@ func Register(deps *oodle.Deps) error {
 		Echo(),
 		CustomCommands(irc),
 		TitleScraper(irc),
+		List(bot),
+		Help(bot),
 		seenCmd, seenTrig,
 		tellCmd, tellTrig,
 	)
