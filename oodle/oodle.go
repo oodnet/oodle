@@ -26,6 +26,7 @@ type IRCClient interface {
 	Close()
 	IsRegistered(nick string) bool
 	InChannel(nick string) bool
+	IsAdmin(nick string) bool
 	OnEvent(callback func(event interface{}))
 	Send(message string)
 	Sendf(format string, a ...interface{})

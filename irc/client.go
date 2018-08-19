@@ -139,6 +139,16 @@ func (irc *IRCClient) InChannel(nick string) bool {
 	return user != nil && user.InChannel(irc.cfg.Channel)
 }
 
+// IsAdmin checks if a user is in the channel
+func (irc *IRCClient) IsAdmin(nick string) bool {
+	user := irc.client.LookupUser(nick)
+	if user == nil || !user.InChannel(irc.cfg.Channel) {
+		return false
+	}
+	perms, ok := user.Perms.Lookup(nick)
+	return ok && perms.IsAdmin()
+}
+
 // IsRegistered checks if a user is registered
 func (irc *IRCClient) IsRegistered(nick string) bool {
 	user := irc.client.LookupUser(nick)
