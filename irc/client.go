@@ -33,6 +33,7 @@ type IRCClient struct {
 	callbacks []func(event interface{})
 	client    *girc.Client
 	log       *logrus.Logger
+	whoisreq  chan girc.Event
 }
 
 func NewIRCClient(log *logrus.Logger) *IRCClient {
@@ -50,10 +51,11 @@ func NewIRCClient(log *logrus.Logger) *IRCClient {
 	}
 
 	return &IRCClient{
-		cfg:     config,
-		nick:    config.Nick,
-		channel: config.Channel,
-		log:     log,
+		cfg:      config,
+		nick:     config.Nick,
+		channel:  config.Channel,
+		log:      log,
+		whoisreq: make(chan girc.Event),
 	}
 }
 
@@ -85,6 +87,27 @@ func (irc *IRCClient) Connect() error {
 	})
 }
 
+// try to reclaim nick every 1 min until it is reclaimed
+func (irc *IRCClient) reclaimNick() {
+	for {
+		if irc.cfg.Nick == irc.client.GetNick() {
+			irc.log.Debugf("Nick reclaimed! Stoping loop")
+			break
+		}
+
+		irc.client.Cmd.Whois(irc.cfg.Nick)
+		if e := <-irc.whoisreq; e.Command == girc.ERR_NOSUCHNICK {
+			irc.client.Cmd.Nick(irc.cfg.Nick)
+			irc.log.Debugf("Sent /nick %s", irc.cfg.Nick)
+		} else {
+			irc.log.Debug("User with desired nick still connected.")
+		}
+
+		// Lets not get banned.
+		time.Sleep(30 * time.Second)
+	}
+}
+
 // Close closes the connection
 func (irc *IRCClient) Close() {
 	irc.client.Close()
@@ -97,6 +120,10 @@ func (irc *IRCClient) onConnect(c *girc.Client, e girc.Event) {
 		"channel": irc.cfg.Channel,
 		"nick":    c.GetNick(),
 	}).Info("Connected!")
+
+	if irc.cfg.Nick != irc.client.GetNick() {
+		go irc.reclaimNick()
+	}
 	c.Cmd.Join(irc.cfg.Channel)
 }
 
@@ -107,6 +134,8 @@ func (irc *IRCClient) onAll(c *girc.Client, e girc.Event) {
 	}
 	nick, msg := e.Source.Name, e.Trailing
 	switch e.Command {
+	case girc.RPL_WHOISUSER, girc.ERR_NOSUCHNICK:
+		irc.whoisreq <- e
 	case girc.JOIN:
 		irc.sendEvent(oodle.Join{Nick: nick})
 	case girc.PART:
