@@ -181,11 +181,6 @@ func (irc *IRCClient) OnEvent(callback func(event interface{})) {
 	irc.callbacks = append(irc.callbacks, callback)
 }
 
-// Send sends an msg to the configured channel
-func (irc *IRCClient) Send(message string) {
-	irc.client.Cmd.Message(irc.cfg.Channel, message)
-}
-
 // InChannel checks if a user is in the channel
 func (irc *IRCClient) InChannel(nick string) bool {
 	user := irc.client.LookupUser(nick)
@@ -214,4 +209,14 @@ func (irc *IRCClient) Sendf(format string, a ...interface{}) {
 	for _, msg := range strings.Split(message, "\n") {
 		irc.client.Cmd.Message(irc.cfg.Channel, msg)
 	}
+}
+
+// Send sends an msg to the configured channel
+func (irc *IRCClient) Send(message string) {
+	irc.client.Cmd.Message(irc.cfg.Channel, message)
+}
+
+// SendTo sends to a specific user
+func (irc *IRCClient) SendTo(user, message string) {
+	irc.client.Cmd.Message(user, message)
 }
