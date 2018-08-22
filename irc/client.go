@@ -2,6 +2,7 @@ package irc
 
 import (
 	"fmt"
+	"net"
 	"strings"
 	"time"
 
@@ -12,6 +13,22 @@ import (
 	"github.com/lrstanley/girc"
 	"github.com/sirupsen/logrus"
 )
+
+// Custom Dialer which prioritizes ipv4
+type dialer struct{}
+
+func (d *dialer) Dial(network, address string) (conn net.Conn, err error) {
+	conn, err = net.Dial("tcp4", address)
+	if err == nil {
+		return
+	}
+	conn, err = net.Dial("tcp6", address)
+	if err == nil {
+		return
+	}
+	conn, err = net.Dial(network, address)
+	return
+}
 
 type Config struct {
 	Server   string
@@ -77,14 +94,21 @@ func (irc *IRCClient) Connect() error {
 	client.Handlers.Add(girc.CONNECTED, irc.onConnect)
 	irc.client = client
 
-	err := client.Connect()
+	err := client.DialerConnect(&dialer{})
 	if _, ok := err.(*girc.ErrInvalidConfig); ok || !irc.cfg.Retry {
 		return err
 	}
-	return backoff.RetryNotify(client.Connect, backoff.NewExponentialBackOff(), func(err error, dur time.Duration) {
-		irc.log.Warnf("Connection failed with err: %s", err)
-		irc.log.Warnf("Retrying in %s", dur)
-	})
+
+	return backoff.RetryNotify(
+		func() error {
+			return client.DialerConnect(&dialer{})
+		},
+		backoff.NewExponentialBackOff(),
+		func(err error, dur time.Duration) {
+			irc.log.Warnf("Connection failed with err: %s", err)
+			irc.log.Warnf("Retrying in %s", dur)
+		},
+	)
 }
 
 // try to reclaim nick every 1 min until it is reclaimed
