@@ -24,7 +24,7 @@ func Register(deps *oodle.Deps) error {
 		CustomCommands(irc),
 		TitleScraper(irc),
 		Version(),
-		List(bot),
+		List(bot, irc),
 		Help(bot),
 		seenCmd, seenTrig,
 		tellCmd, tellTrig,
@@ -67,19 +67,18 @@ func Help(bot oodle.Bot) oodle.Command {
 }
 
 // List lists all the commands
-func List(bot oodle.Bot) oodle.Command {
+func List(bot oodle.Bot, sender oodle.Sender) oodle.Command {
 	return oodle.Command{
 		Prefix:      ".",
 		Name:        "list",
-		Description: "Lists all the commands",
+		Description: "PMs you a list of all the commands",
 		Usage:       ".list",
 		Fn: func(nick string, args []string) (reply string, err error) {
-			buf := ""
 			for _, cmd := range bot.Commands() {
-				buf += fmt.Sprintf("%s: %s\n", cmd.Name, cmd.Description)
+				msg := fmt.Sprintf("%s: %s", cmd.Name, cmd.Description)
+				sender.SendTo(nick, msg)
 			}
-			buf = strings.TrimSuffix(buf, "\n")
-			return buf, nil
+			return "", nil
 		},
 	}
 }
