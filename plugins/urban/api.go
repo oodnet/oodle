@@ -3,28 +3,44 @@ package urban
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 )
 
-type results struct {
-	List []struct {
-		ThumbsUp   int    `json:"thumbs_up"`
-		Definition string `json:"definition"`
-		ThumbsDown int    `json:"thumbs_down"`
-	} `json:"list"`
+type definition struct {
+	Word       string `json:"word"`
+	Permalink  string `json:"permalink"`
+	ThumbsUp   int    `json:"thumbs_up"`
+	Definition string `json:"definition"`
+	ThumbsDown int    `json:"thumbs_down"`
 }
 
-func top(r results) string {
+type results struct {
+	List []definition `json:"list"`
+}
+
+func top(defs []definition) definition {
 	topscore := 0
-	topdef := ""
-	for _, d := range r.List {
+	topdef := definition{}
+	for _, d := range defs {
 		score := d.ThumbsUp - d.ThumbsDown
 		if score > topscore {
 			topscore = score
-			topdef = d.Definition
+			topdef = d
 		}
 	}
 	return topdef
+}
+
+func format(def definition) string {
+	lines := strings.Split(def.Definition, "\r\n\r\n")
+	if len(lines) > 3 {
+		lines = lines[:3]
+	}
+
+	trimmed := strings.Join(lines, " ")
+	return fmt.Sprintf("%s: %s\n%s", def.Word, def.Permalink, trimmed)
 }
 
 var ErrNoDefinition = errors.New("No definition found.")
@@ -45,5 +61,5 @@ func define(word string) (string, error) {
 		return "", ErrNoDefinition
 	}
 
-	return top(r), nil
+	return format(r.List[0]), nil
 }
