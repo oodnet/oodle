@@ -9,6 +9,7 @@ import (
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/godwhoa/oodle/plugins/core"
 	"github.com/godwhoa/oodle/plugins/hackterm"
+	"github.com/godwhoa/oodle/plugins/urban"
 	"github.com/godwhoa/oodle/plugins/webhook"
 	_ "github.com/mattn/go-sqlite3"
 	flag "github.com/ogier/pflag"
@@ -67,6 +68,7 @@ func main() {
 	if err := must(
 		core.Register(deps),
 		hackterm.Register(deps),
+		urban.Register(deps),
 		webhook.Register(deps),
 	); err != nil {
 		logger.Fatal(err)
