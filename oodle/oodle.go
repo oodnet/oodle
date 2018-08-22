@@ -24,11 +24,20 @@ type Trigger func(event interface{})
 type IRCClient interface {
 	Connect() error
 	Close()
+	OnEvent(callback func(event interface{}))
+	Sender
+	Checker
+}
+
+type Checker interface {
 	IsRegistered(nick string) bool
 	InChannel(nick string) bool
 	IsAdmin(nick string) bool
-	OnEvent(callback func(event interface{}))
+}
+
+type Sender interface {
 	Send(message string)
+	SendTo(user, message string)
 	Sendf(format string, a ...interface{})
 }
 
