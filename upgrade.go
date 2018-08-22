@@ -44,7 +44,8 @@ func extractAsset(r *Release) (string, error) {
 
 // Downloads a file to tmp dir. then returns file name.
 func downloadTmp(url string) (string, error) {
-	f, err := ioutil.TempFile(os.TempDir(), "oodle")
+	cdir, _ := os.Getwd()
+	f, err := ioutil.TempFile(cdir, "oodle")
 	if err != nil {
 		return "", fmt.Errorf("Failed to create tmp file: %v", err)
 	}
