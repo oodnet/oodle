@@ -74,11 +74,13 @@ func List(bot oodle.Bot, sender oodle.Sender) oodle.Command {
 		Description: "PMs you a list of all the commands",
 		Usage:       ".list",
 		Fn: func(nick string, args []string) (reply string, err error) {
+			msg := "Commands: "
 			for _, cmd := range bot.Commands() {
-				msg := fmt.Sprintf("%s: %s", cmd.Name, cmd.Description)
-				sender.SendTo(nick, msg)
+				msg += cmd.Name
+				msg += ", "
 			}
-			return "", nil
+			msg = strings.TrimSuffix(msg, ", ")
+			return msg, nil
 		},
 	}
 }
