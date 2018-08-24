@@ -46,8 +46,6 @@ func Tell(irc oodle.IRCClient, db *sql.DB) (oodle.Command, oodle.Trigger) {
 	}
 	trigger := func(event interface{}) {
 		switch event.(type) {
-		case oodle.Join:
-			notify(event.(oodle.Join).Nick)
 		case oodle.Message:
 			notify(event.(oodle.Message).Nick)
 		}
