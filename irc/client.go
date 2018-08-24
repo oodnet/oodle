@@ -1,8 +1,10 @@
 package irc
 
 import (
+	"bufio"
 	"fmt"
 	"net"
+	"os"
 	"strings"
 	"time"
 
@@ -92,6 +94,18 @@ func (irc *IRCClient) Connect() error {
 	client := girc.New(gircConf)
 	client.Handlers.Add(girc.ALL_EVENTS, irc.onAll)
 	client.Handlers.Add(girc.CONNECTED, irc.onConnect)
+	client.Handlers.Add(girc.ALL_EVENTS, func(c *girc.Client, e girc.Event) {
+		if e.Command == girc.PRIVMSG {
+			fmt.Printf("PRIVMSG %s: %s\n", e.Source.Name, e.Trailing)
+		}
+		if e.Command == girc.NOTICE {
+			fmt.Printf("NOTICE %s: %s\n", e.Source.Name, e.Trailing)
+		}
+		// Print error responses
+		if len(e.Command) == 3 && strings.HasPrefix(e.Command, "4") {
+			fmt.Printf("ERR_RPL: %s %s\n", e.Source.String(), e.Trailing)
+		}
+	})
 	irc.client = client
 
 	err := client.DialerConnect(&dialer{})
@@ -219,4 +233,39 @@ func (irc *IRCClient) Send(message string) {
 // SendTo sends to a specific user
 func (irc *IRCClient) SendTo(user, message string) {
 	irc.client.Cmd.Message(user, message)
+}
+
+// /msg hello world -> "/msg", ["##oodle-test", "hello", "world"]
+func parseCmd(input string) (string, []string) {
+	if !strings.HasPrefix(input, "/") {
+		return "", []string{}
+	}
+	args := strings.Split(input, " ")
+	if len(args) < 2 {
+		return "", []string{}
+	}
+	return args[0], args[1:]
+}
+
+// MiniClient starts a mini clients which provides basic irc commands
+func (irc *IRCClient) MiniClient() {
+
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		input := scanner.Text()
+		cmd, args := parseCmd(input)
+		switch cmd {
+		case "/msg":
+			irc.SendTo(args[0], strings.Join(args[1:], " "))
+		case "/me":
+			irc.client.Cmd.Action(irc.cfg.Channel, strings.Join(args, " "))
+		case "/nick":
+			irc.client.Cmd.Nick(args[0])
+		}
+
+	}
+
+	if err := scanner.Err(); err != nil {
+		irc.log.Error(err)
+	}
 }

@@ -55,6 +55,7 @@ func main() {
 	}
 
 	ircClient := irc.NewIRCClient(logger)
+	go ircClient.MiniClient()
 	oodleBot := bot.NewBot(logger, ircClient)
 
 	deps := &oodle.Deps{
