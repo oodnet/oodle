@@ -1,0 +1,78 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import re
+import argparse
+
+def get_tag():
+    return os.popen("git describe --abbrev=0 --tags").read().strip("\n")
+
+def parse(tag):
+    p = re.compile(r'^v\d+.\d+.\d+$')
+    if p.match(tag) is None:
+        raise ValueError("Tag needs to be in vMAJOR.MINOR.PATCH format")
+    parsed = tag.strip('v').split('.')
+    return {
+        'MAJOR': int(parsed[0]),
+        'MINOR': int(parsed[1]),
+        'PATCH': int(parsed[2])
+    }
+
+def bump(version, change):
+    if change == 'MAJOR':
+        return {
+            'MAJOR': version['MAJOR']+1,
+            'MINOR': 0,
+            'PATCH': 0
+        }
+    elif change == 'MINOR':
+        return {
+            'MAJOR': version['MAJOR'],
+            'MINOR': version['MINOR']+1,
+            'PATCH': 0
+        }
+    elif change == 'PATCH':
+        return {
+            'MAJOR': version['MAJOR'],
+            'MINOR': version['MINOR'],
+            'PATCH': version['PATCH']+1
+        }
+    else:
+        raise ValueError("Invalid change can only be 'MAJOR', 'MINOR' or 'PATCH'")
+
+def format_version(version):
+    return "v{}.{}.{}".format(version['MAJOR'], version['MINOR'], version['PATCH'])
+
+def create_tag(tag, msg):
+    cmd = "git tag -a {} -m {}".format(tag, msg)
+    print("Running: ", cmd)
+    return os.popen(cmd).read().strip("\n")
+
+def push(tag):
+    cmd = "git push origin {}".format(tag)
+    print("Running: ", cmd)
+    return os.popen(cmd).read().strip("\n")
+
+parser = argparse.ArgumentParser(description='Bumps up semantic version')
+parser.add_argument('change', metavar='change', type=str, nargs=1, help='MAJOR, MINOR or PATCH change')
+parser.add_argument('message', metavar='message', type=str, nargs=1, help='Message for the tag')
+args = parser.parse_args()
+print(args.change[0])
+def run():
+    tag = get_tag()
+    current_version = parse(tag)
+    print("Current version: ", format_version(current_version))
+    try:
+        new_version = bump(current_version, args.change[0])
+        new_tag = format_version(new_version)
+    except ValueError:
+        print("Needs to be MAJOR, MINOR or PATCH")
+        sys.exit(1)
+    print("Bumped to: ",format_version(new_version))
+    input("git tag and git push are gonna be executed do you wanna proceed?\n CTRL+C to abort.")
+    print(create_tag(new_tag, args.message[0]))
+    print(push(new_tag))
+
+if __name__ == "__main__":
+    run()
