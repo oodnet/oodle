@@ -16,7 +16,7 @@ import (
 > Persist reminders to database
 > A loop queries the database for reminders which need to be sent out every 1sec
 > If user is in channel then send it out
-> If not add it to tell store
+> If not add it to .tell's store
 */
 
 var durationRegex = regexp.MustCompile(`([0-9]+)|month|day|hour|min|sec|mon|d|h|m|s`)
@@ -116,32 +116,30 @@ func (r *RemindIn) fn(nick string, args []string) (string, error) {
 		return err.Error(), nil
 	}
 	msg := strings.Join(args[1:], " ")
-	go func() {
-		reminder := Reminder{
-			By:  nick,
-			Msg: msg,
-			At:  time.Now().Add(duration),
-		}
-		r.store.Set(reminder)
-		time.Sleep(duration)
-		r.send(reminder)
-		r.store.Delete(reminder.ID)
-	}()
+	r.store.Set(Reminder{
+		By:  nick,
+		Msg: msg,
+		At:  time.Now().Add(duration),
+	})
 	return "Reminder set!", nil
 }
 
 func (r *RemindIn) sendout() {
 	reminders := r.store.Reminders()
 	for _, reminder := range reminders {
-		go func(reminder Reminder) {
-			if !time.Now().After(reminder.At) {
-				d := reminder.At.Sub(time.Now())
-				fmt.Println("Sleeping", d)
-				time.Sleep(d)
-			}
+		fmt.Println(reminder.At.Sub(time.Now()))
+		if time.Now().After(reminder.At) {
 			r.send(reminder)
 			r.store.Delete(reminder.ID)
-		}(*reminder)
+		}
+	}
+}
+
+// Watch watches the store and sends out reminder that need to be out
+func (r *RemindIn) Watch() {
+	for {
+		r.sendout()
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -198,9 +196,9 @@ func (r *ReminderStore) Set(reminder Reminder) error {
 	return err
 }
 
-func (r *ReminderStore) Reminders() []*Reminder {
-	reminders := []*Reminder{}
-	r.db.Select(&reminders, `SELECT * FROM reminders WHERE deleted_at" IS NULL;`)
+func (r *ReminderStore) Reminders() []Reminder {
+	reminders := []Reminder{}
+	fmt.Println(r.db.Select(&reminders, `SELECT * FROM reminders WHERE "deleted_at" IS NULL ORDER BY "at" ASC;`))
 	return reminders
 }
 

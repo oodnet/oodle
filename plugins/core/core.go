@@ -18,7 +18,7 @@ import (
 func Register(deps *oodle.Deps) error {
 	irc, bot, db := deps.IRC, deps.Bot, deps.DB
 	remindin := &RemindIn{irc, irc, NewReminderStore(db), NewMailBox(db)}
-	remindin.sendout()
+	go remindin.Watch()
 	seenCmd, seenTrig := Seen()
 	tellCmd, tellTrig := Tell(irc, db)
 	bot.Register(
