@@ -38,7 +38,7 @@ func Tell(irc oodle.IRCClient, db *sql.DB) (oodle.Command, oodle.Trigger) {
 		if !store.HasMail(nick) {
 			return
 		}
-		letters := store.GetLetters(nick)
+		letters := store.Letters(nick)
 		for _, l := range letters {
 			irc.Sendf("%s, %s left this message for you: %s\n%s ago", nick, l.From, l.Body, u.FmtTime(l.When))
 		}

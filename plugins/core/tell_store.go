@@ -52,7 +52,7 @@ func (t *MailBox) Send(l Letter) error {
 	return err
 }
 
-func (t *MailBox) GetLetters(to string) []*Letter {
+func (t *MailBox) Letters(to string) []*Letter {
 	letters := []*Letter{}
 	t.db.Select(&letters, `SELECT * FROM letters WHERE "to" = ? AND "deleted_at" IS NULL;`, to)
 	return letters
