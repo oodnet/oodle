@@ -17,6 +17,8 @@ import (
 // Register wires everything up
 func Register(deps *oodle.Deps) error {
 	irc, bot, db := deps.IRC, deps.Bot, deps.DB
+	remindin := &RemindIn{irc, irc, NewReminderStore(db), NewMailBox(db)}
+	remindin.sendout()
 	seenCmd, seenTrig := Seen()
 	tellCmd, tellTrig := Tell(irc, db)
 	bot.Register(
@@ -26,6 +28,7 @@ func Register(deps *oodle.Deps) error {
 		Version(),
 		List(bot, irc),
 		Help(bot),
+		remindin.Command(),
 		seenCmd, seenTrig,
 		tellCmd, tellTrig,
 	)
