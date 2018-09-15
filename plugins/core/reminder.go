@@ -2,7 +2,6 @@ package core
 
 import (
 	"database/sql"
-	"fmt"
 	"strings"
 	"time"
 
@@ -58,7 +57,6 @@ func (r *RemindIn) fn(nick string, args []string) (string, error) {
 func (r *RemindIn) sendout() {
 	reminders := r.store.Reminders()
 	for _, reminder := range reminders {
-		fmt.Println(reminder.At.Sub(time.Now()))
 		if time.Now().After(reminder.At) {
 			r.send(reminder)
 			r.store.Delete(reminder.ID)
@@ -129,7 +127,7 @@ func (r *ReminderStore) Set(reminder Reminder) error {
 
 func (r *ReminderStore) Reminders() []Reminder {
 	reminders := []Reminder{}
-	fmt.Println(r.db.Select(&reminders, `SELECT * FROM reminders WHERE "deleted_at" IS NULL ORDER BY "at" ASC;`))
+	r.db.Select(&reminders, `SELECT * FROM reminders WHERE "deleted_at" IS NULL ORDER BY "at" ASC;`)
 	return reminders
 }
 
