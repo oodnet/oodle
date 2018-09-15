@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/godwhoa/oodle/oodle"
@@ -47,6 +48,7 @@ func AdminOnly(check oodle.Checker) Middleware {
 			}
 			return next(nick, args)
 		}
+		return cmd
 	}
 	return Middleware(fn)
 }
@@ -71,14 +73,16 @@ func RateLimit(limit int, duration time.Duration) Middleware {
 	fn := func(cmd oodle.Command) oodle.Command {
 		next := cmd.Fn
 		cmd.Fn = func(nick string, args []string) (reply string, err error) {
+			if time.Since(last) >= duration {
+				executions = 0
+				last = time.Now()
+			}
 			if executions > limit {
 				return "Rate limited.", nil
 			}
-			if time.Since(last) >= duration {
-				executions = 0
-			}
 			executions++
 			last = time.Now()
+			fmt.Println(executions, last)
 			return next(nick, args)
 		}
 		return cmd
