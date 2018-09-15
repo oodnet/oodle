@@ -1,11 +1,11 @@
-package core
+package utils
 
 import (
 	"testing"
 	"time"
 )
 
-func Test_parseDuration(t *testing.T) {
+func Test_ParseDuration(t *testing.T) {
 	type args struct {
 		format string
 	}
@@ -40,27 +40,15 @@ func Test_parseDuration(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "Unit order error",
-			format:  "1sec10min",
+			name:    "Random",
+			format:  "arex",
 			want:    time.Second * 0,
 			wantErr: true,
 		},
-		{
-			name:    "Repeating unit error",
-			format:  "1hr1sec1sec",
-			want:    time.Second * 0,
-			wantErr: true,
-		},
-		// {
-		// 	name:    "Valid format with random fragments",
-		// 	format:  "1hr10seclol",
-		// 	want:    time.Second * 0,
-		// 	wantErr: true,
-		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parseDuration(tt.format)
+			got, err := ParseDuration(tt.format)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("parseDuration() title = %s error = %v, wantErr %v", tt.name, err, tt.wantErr)
 				return
