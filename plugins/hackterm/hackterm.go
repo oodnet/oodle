@@ -3,6 +3,7 @@ package hackterm
 import (
 	"strings"
 
+	m "github.com/godwhoa/oodle/middleware"
 	"github.com/godwhoa/oodle/oodle"
 )
 
@@ -12,17 +13,16 @@ func Register(deps *oodle.Deps) error {
 }
 
 func HackTerm() oodle.Command {
-	return oodle.Command{
+	cmd := oodle.Command{
 		Prefix:      ".",
 		Name:        "hackterm",
 		Description: "Fetches definitions from hackerterms.com",
 		Usage:       ".hackterm <term>",
 		Fn: func(nick string, args []string) (string, error) {
-			if len(args) < 1 {
-				return "", oodle.ErrUsage
-			}
 			term := strings.Join(args, " ")
 			return define(term), nil
 		},
 	}
+	cmd = m.Chain(cmd, m.MinArg(1))
+	return cmd
 }

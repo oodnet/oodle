@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	m "github.com/godwhoa/oodle/middleware"
 	"github.com/godwhoa/oodle/oodle"
 	u "github.com/godwhoa/oodle/utils"
 	"github.com/jmoiron/sqlx"
@@ -38,9 +39,6 @@ func (r *RemindIn) send(reminder Reminder) {
 }
 
 func (r *RemindIn) fn(nick string, args []string) (string, error) {
-	if len(args) < 2 {
-		return "", oodle.ErrUsage
-	}
 	duration, err := u.ParseDuration(args[0])
 	if err != nil {
 		return err.Error(), nil
@@ -73,13 +71,15 @@ func (r *RemindIn) Watch() {
 }
 
 func (r *RemindIn) Command() oodle.Command {
-	return oodle.Command{
+	cmd := oodle.Command{
 		Prefix:      ".",
 		Name:        "remindin",
 		Description: "Lets you set yourself a reminder",
 		Usage:       ".reminder <duration> <msg>",
 		Fn:          r.fn,
 	}
+	cmd = m.Chain(cmd, m.MinArg(2))
+	return cmd
 }
 
 type Reminder struct {

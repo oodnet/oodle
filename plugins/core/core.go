@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/PuerkitoBio/goquery"
+	m "github.com/godwhoa/oodle/middleware"
 	"github.com/godwhoa/oodle/oodle"
 	u "github.com/godwhoa/oodle/utils"
 	"mvdan.cc/xurls"
@@ -50,15 +51,12 @@ func Version() oodle.Command {
 
 // Help gives help info for commands
 func Help(bot oodle.Bot) oodle.Command {
-	return oodle.Command{
+	cmd := oodle.Command{
 		Prefix:      ".",
 		Name:        "help",
 		Description: "Give description and usage for a command",
 		Usage:       ".help <command name>",
 		Fn: func(nick string, args []string) (reply string, err error) {
-			if len(args) < 1 {
-				return "", oodle.ErrUsage
-			}
 			for _, cmd := range bot.Commands() {
 				if cmd.Name == args[0] {
 					return fmt.Sprintf("Desciption: %s\nUsage: %s", cmd.Description, cmd.Usage), nil
@@ -67,6 +65,8 @@ func Help(bot oodle.Bot) oodle.Command {
 			return "No command named " + args[0], nil
 		},
 	}
+	cmd = m.Chain(cmd, m.MinArg(1))
+	return cmd
 }
 
 // List lists all the commands
@@ -129,9 +129,6 @@ func Seen() (oodle.Command, oodle.Trigger) {
 		Description: "Tells you when it last saw someone",
 		Usage:       ".seen <nick>",
 		Fn: func(nick string, args []string) (string, error) {
-			if len(args) < 1 {
-				return "", oodle.ErrUsage
-			}
 			if lastSeen, ok := store[args[0]]; ok {
 				return fmt.Sprintf("%s was last seen %s ago.", args[0], u.FmtTime(lastSeen)), nil
 			}
@@ -148,6 +145,7 @@ func Seen() (oodle.Command, oodle.Trigger) {
 			store[event.(oodle.Message).Nick] = time.Now()
 		}
 	}
+	cmd = m.Chain(cmd, m.MinArg(1))
 	return cmd, trigger
 }
 

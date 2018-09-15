@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	m "github.com/godwhoa/oodle/middleware"
 	"github.com/godwhoa/oodle/oodle"
 	u "github.com/godwhoa/oodle/utils"
 )
@@ -19,9 +20,6 @@ func Tell(irc oodle.IRCClient, db *sql.DB) (oodle.Command, oodle.Trigger) {
 		Description: "Lets you send a msg. to an inactive user. It will notify them once they are active.",
 		Usage:       ".tell <to> <msg>",
 		Fn: func(nick string, args []string) (string, error) {
-			if len(args) < 2 {
-				return "", oodle.ErrUsage
-			}
 			err := store.Send(Letter{
 				From: nick,
 				To:   args[0],
@@ -50,5 +48,6 @@ func Tell(irc oodle.IRCClient, db *sql.DB) (oodle.Command, oodle.Trigger) {
 			notify(event.(oodle.Message).Nick)
 		}
 	}
+	cmd = m.Chain(cmd, m.MinArg(2))
 	return cmd, trigger
 }
