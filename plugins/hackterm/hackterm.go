@@ -8,7 +8,7 @@ import (
 )
 
 func Register(deps *oodle.Deps) error {
-	deps.Bot.Register(HackTerm())
+	deps.Bot.RegisterCommands(HackTerm())
 	return nil
 }
 

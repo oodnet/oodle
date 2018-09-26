@@ -22,16 +22,20 @@ func Register(deps *oodle.Deps) error {
 	go remindin.Watch()
 	seenCmd, seenTrig := Seen()
 	tellCmd, tellTrig := Tell(irc, db)
-	bot.Register(
-		Echo(),
+	bot.RegisterTriggers(
 		CustomCommands(irc),
 		TitleScraper(irc),
+		seenTrig,
+		tellTrig,
+	)
+	bot.RegisterCommands(
+		Echo(),
 		Version(),
 		List(bot, irc),
 		Help(bot),
 		remindin.Command(),
-		seenCmd, seenTrig,
-		tellCmd, tellTrig,
+		seenCmd,
+		tellCmd,
 	)
 
 	return nil

@@ -8,7 +8,7 @@ import (
 )
 
 func Register(deps *oodle.Deps) error {
-	deps.Bot.Register(Urban())
+	deps.Bot.RegisterCommands(Urban())
 	return nil
 }
 

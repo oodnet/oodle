@@ -85,22 +85,18 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-func (bot *Bot) Register(plugins ...interface{}) {
+func (bot *Bot) RegisterCommands(commands ...oodle.Command) {
 	disabled := viper.GetStringSlice("disabled_commands")
-	for _, plugin := range plugins {
-		switch plugin.(type) {
-		case oodle.Command:
-			cmd := plugin.(oodle.Command)
-			if contains(disabled, cmd.Name) {
-				continue
-			}
-			bot.commandMap[cmd.Prefix+cmd.Name] = cmd
-		case oodle.Trigger:
-			bot.triggers = append(bot.triggers, plugin.(oodle.Trigger))
-		default:
-			bot.log.Warnf("%+v is neither a Command or a Trigger.", plugin)
+	for _, cmd := range commands {
+		if contains(disabled, cmd.Name) {
+			return
 		}
+		bot.commandMap[cmd.Prefix+cmd.Name] = cmd
 	}
+}
+
+func (bot *Bot) RegisterTriggers(triggers ...oodle.Trigger) {
+	bot.triggers = append(bot.triggers, triggers...)
 }
 
 func (bot *Bot) Commands() []oodle.Command {

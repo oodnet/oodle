@@ -43,8 +43,8 @@ type Sender interface {
 
 // Bot handles trigger/command execution
 type Bot interface {
-	// Register registers Trigger/Command only.
-	Register(plugins ...interface{})
+	RegisterCommands(plugins ...Command)
+	RegisterTriggers(plugins ...Trigger)
 	Commands() []Command
 }
 
