@@ -11,6 +11,7 @@ import (
 	"github.com/godwhoa/oodle/plugins/hackterm"
 	"github.com/godwhoa/oodle/plugins/urban"
 	"github.com/godwhoa/oodle/plugins/webhook"
+	"github.com/godwhoa/oodle/plugins/wiki"
 	_ "github.com/mattn/go-sqlite3"
 	flag "github.com/ogier/pflag"
 	"github.com/sirupsen/logrus"
@@ -70,6 +71,7 @@ func main() {
 		core.Register(deps),
 		hackterm.Register(deps),
 		urban.Register(deps),
+		wiki.Register(deps),
 		webhook.Register(deps),
 	); err != nil {
 		logger.Fatal(err)
