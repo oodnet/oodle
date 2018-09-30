@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import subprocess
 import os
 import sys
 import re
@@ -45,14 +46,14 @@ def format_version(version):
     return "v{}.{}.{}".format(version['MAJOR'], version['MINOR'], version['PATCH'])
 
 def create_tag(tag, msg):
-    cmd = "git tag -a {} -m {}".format(tag, msg)
-    print("Running: ", cmd)
-    return os.popen(cmd).read().strip("\n")
+    cmd = ["git", "tag", "-a", tag,  "-m", msg]
+    print("Running: ", " ".join(cmd))
+    return subprocess.check_output(cmd)
 
 def push(tag):
-    cmd = "git push origin {}".format(tag)
-    print("Running: ", cmd)
-    return os.popen(cmd).read().strip("\n")
+    cmd = ["git", "push", "origin", tag]
+    print("Running: ", " ".join(cmd))
+    return subprocess.check_output(cmd)
 
 parser = argparse.ArgumentParser(description='Bumps up semantic version')
 parser.add_argument('change', metavar='change', type=str, nargs=1, help='MAJOR, MINOR or PATCH change')
