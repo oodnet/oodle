@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	u "github.com/godwhoa/oodle/utils"
 )
 
 type definition struct {
@@ -34,13 +36,9 @@ func top(defs []definition) definition {
 }
 
 func format(def definition) string {
-	lines := strings.Split(def.Definition, "\r\n\r\n")
-	if len(lines) > 3 {
-		lines = lines[:3]
-	}
-
-	trimmed := strings.Join(lines, " ")
-	return fmt.Sprintf("%s: %s\n%s", def.Word, def.Permalink, trimmed)
+	def.Definition = strings.Replace(def.Definition, "\r\n", "", -1)
+	def.Definition = u.Summarize(def.Definition)
+	return fmt.Sprintf("%s: %s\n%s", def.Word, def.Permalink, def.Definition)
 }
 
 var ErrNoDefinition = errors.New("No definition found.")

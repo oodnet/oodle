@@ -68,3 +68,7 @@
 [[constraint]]
   name = "github.com/stretchr/testify"
   version = "1.2.2"
+
+[[constraint]]
+  name = "gopkg.in/neurosnap/sentences.v1"
+  version = "1.0.6"

@@ -189,6 +189,16 @@
   version = "v0.3.0"
 
 [[projects]]
+  name = "gopkg.in/neurosnap/sentences.v1"
+  packages = [
+    ".",
+    "data",
+    "english"
+  ]
+  revision = "a7f18ead1433a139742a8b42ce7a059cfb484d60"
+  version = "v1.0.6"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
@@ -203,6 +213,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "17d9ec7a026fa9cabdd58e6c15412a99d05792823fc55ee4c4e1b78575192c97"
+  inputs-digest = "376cd956ca1ea3fe6949b27abf3d65327195b875b8730258a9467683b1a15168"
   solver-name = "gps-cdcl"
   solver-version = 1

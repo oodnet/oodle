@@ -8,7 +8,28 @@ import (
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/hako/durafmt"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/neurosnap/sentences.v1/english"
 )
+
+func min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+var tokenizer, _ = english.NewSentenceTokenizer(nil)
+
+func Summarize(text string) (summarized string) {
+	sentences := tokenizer.Tokenize(text)
+	for _, s := range sentences {
+		if len(summarized) > 350 {
+			return
+		}
+		summarized += s.Text
+	}
+	return
+}
 
 func FmtTime(t time.Time) string {
 	// gets rid of milliseconds, I think?
