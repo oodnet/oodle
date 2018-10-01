@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"net/http"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -24,6 +25,7 @@ func Register(deps *oodle.Deps) error {
 	tellCmd, tellTrig := Tell(irc, db)
 	bot.RegisterTriggers(
 		CustomCommands(irc),
+		ExecCommands(irc),
 		TitleScraper(irc),
 		seenTrig,
 		tellTrig,
@@ -120,6 +122,29 @@ func CustomCommands(irc oodle.IRCClient) oodle.Trigger {
 		}
 		if msg, ok := commands[args[0]]; ok {
 			irc.Send(msg)
+		}
+	}
+}
+
+// ExecCommands is similar to custom commands but instead of sending fixed message
+// It runs/sends output of configured shell command
+func ExecCommands(sender oodle.Sender) oodle.Trigger {
+	commands := viper.GetStringMapString("exec_commands")
+	return func(event interface{}) {
+		message, ok := event.(oodle.Message)
+		if !ok {
+			return
+		}
+		args := strings.Split(strings.TrimSpace(message.Msg), " ")
+		if len(args) < 1 {
+			return
+		}
+		if command, ok := commands[args[0]]; ok {
+			go func() {
+				cmd := exec.Command("bash", "-c", command)
+				output, _ := cmd.CombinedOutput()
+				sender.Send(string(output))
+			}()
 		}
 	}
 }

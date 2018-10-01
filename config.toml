@@ -27,3 +27,7 @@ disabled_commands = [
 [custom_commands]
 ".site" = "https://pacn.in"
 ".google" = "https://google.in"
+
+
+[exec_commands]
+# ".fortune" = "fortune -s"
