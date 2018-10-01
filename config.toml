@@ -29,5 +29,5 @@ disabled_commands = [
 ".google" = "https://google.in"
 
 
-[exec_commands]
-# ".fortune" = "fortune -s"
+#[exec_commands]
+#".fortune" = "fortune -s"
