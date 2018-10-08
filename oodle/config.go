@@ -11,5 +11,5 @@ func SetDefaults() {
 	viper.SetDefault("channel", "##oodle-test")
 	viper.SetDefault("retry", true)
 	viper.SetDefault("dbpath", "store.sqlite")
-	viper.SetDefault("webhook_addr", "127.0.0.1:8000")
+	viper.SetDefault("webhook_addr", "")
 }

@@ -13,8 +13,12 @@ import (
 )
 
 func Register(deps *oodle.Deps) error {
+	addr := viper.GetString("webhook_addr")
+	if addr == "" {
+		return nil
+	}
 	hook := &webhook{irc: deps.IRC, log: deps.Logger, secret: viper.GetString("secret")}
-	go hook.Listen(viper.GetString("webhook_addr"))
+	go hook.Listen(addr)
 	return nil
 }
 

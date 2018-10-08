@@ -12,8 +12,8 @@ retry = true
 # Where to store sqlite file
 dbpath = "store.sqlite"
 # Webhook
-secret = "7570abf6d5619dd0f9668551845ffe02a082fddf4a097306dae9b05ad6a2" # OFC change this
-webhook_addr = "127.0.0.1:8000"
+# secret = "7570abf6d5619dd0f9668551845ffe02a082fddf4a097306dae9b05ad6a2" # OFC change this
+# webhook_addr = "127.0.0.1:8000"
 
 url_blacklist = [
     "git.io"
