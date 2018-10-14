@@ -75,7 +75,7 @@ func (r *RemindIn) Command() oodle.Command {
 		Prefix:      ".",
 		Name:        "remindin",
 		Description: "Lets you set yourself a reminder",
-		Usage:       ".reminder <duration> <msg>",
+		Usage:       ".remindin <duration> <msg>",
 		Fn:          r.fn,
 	}
 	cmd = m.Chain(cmd, m.MinArg(2))
