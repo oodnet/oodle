@@ -16,6 +16,18 @@ import (
 	"mvdan.cc/xurls"
 )
 
+func ａs(text string) string {
+	var builder strings.Builder
+	for _, r := range text {
+		offset := rune(0)
+		if r >= 33 && r <= 126 {
+			offset = 65248
+		}
+		builder.WriteRune(r + offset)
+	}
+	return builder.String()
+}
+
 // Register wires everything up
 func Register(deps *oodle.Deps) error {
 	irc, bot, db := deps.IRC, deps.Bot, deps.DB
@@ -103,7 +115,7 @@ func Echo() oodle.Command {
 		Description: "Exclamates your nick back!",
 		Usage:       botNick + "!",
 		Fn: func(nick string, args []string) (string, error) {
-			return nick + "!", nil
+			return ａs(nick + "!"), nil
 		},
 	}
 }
