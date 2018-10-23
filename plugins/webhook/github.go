@@ -50,7 +50,7 @@ func gitio(ghurl string) string {
 	if err != nil {
 		return ghurl
 	}
-	return "https://git.io/" + string(key), nil
+	return "https://git.io/" + string(key)
 }
 
 func (wh *webhook) PushEvent(w http.ResponseWriter, r *http.Request) {
