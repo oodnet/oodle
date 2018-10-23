@@ -43,6 +43,7 @@ func branch(ref string) string {
 func gitio(ghurl string) string {
 	resp, err := http.PostForm("https://git.io/create", url.Values{"url": {ghurl}})
 	if err != nil {
+		fmt.Println(err)
 		return ghurl
 	}
 	defer resp.Body.Close()
