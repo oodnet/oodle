@@ -7,12 +7,11 @@ before_install:
   - tar -xvf upx-3.94-amd64_linux.tar.xz
   - sudo mv upx-3.94-amd64_linux/upx /usr/local/bin
 env:
-  - GO111MODULE=on GOFLAGS=-mod=vendor
+  - GO111MODULE=on
 cache:
   directories:
-    - vendor/
-install:
-  - go mod vendor
+    - $HOME/.cache/go-build
+    - $HOME/gopath/pkg/mod
 script:
   - COMMIT=`git rev-parse HEAD`
   - VERSION=`git describe --abbrev=0 --tags`
