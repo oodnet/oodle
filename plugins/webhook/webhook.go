@@ -47,6 +47,7 @@ func (wh *webhook) Send(w http.ResponseWriter, r *http.Request) {
 
 func (wh *webhook) Listen(addr string) {
 	http.HandleFunc("/send", wh.Send)
+	http.HandleFunc("/push", wh.PushEvent)
 	wh.log.Infof("Starting webhook on %s", addr)
 	wh.log.Fatalf("Webhook failed: %v", http.ListenAndServe(addr, nil))
 }
