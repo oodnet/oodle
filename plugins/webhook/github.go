@@ -43,13 +43,14 @@ func branch(ref string) string {
 func gitio(ghurl string) string {
 	resp, err := http.PostForm("https://git.io/create", url.Values{"url": {ghurl}})
 	if err != nil {
-		fmt.Println(err)
 		return ghurl
 	}
 	defer resp.Body.Close()
-	key, _ := ioutil.ReadAll(resp.Body)
-
-	return "https://git.io/" + string(key)
+	key, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return ghurl
+	}
+	return "https://git.io/" + string(key), nil
 }
 
 func (wh *webhook) PushEvent(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +65,7 @@ func (wh *webhook) PushEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// <oodle> godwhoa pushed 6 new commits to master: https://git.io/fAvUI
-	msg := fmt.Sprintf("%s pushed %d new commits to %s: %s", payload.Pusher.Name, len(payload.Commits), branch(payload.Ref), payload.Compare)
+	msg := fmt.Sprintf("%s pushed %d new commits to %s: %s", payload.Pusher.Name, len(payload.Commits), branch(payload.Ref), gitio(payload.Compare))
 	for i, commit := range payload.Commits {
 		if !commit.Distinct {
 			continue
@@ -74,7 +75,7 @@ func (wh *webhook) PushEvent(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		// <oodle> oodle/master 0f7d2e5 Godwhoa: Seperate irc client from bot package
-		msg += fmt.Sprintf("\n%s %s %s: %s", payload.Repository.FullName, commit.ID[:6], commit.Committer.Username, commit.Message)
+		msg += fmt.Sprintf("\n%s %s %s: %s", payload.Repository.FullName, commit.ID[:7], commit.Committer.Username, commit.Message)
 	}
 	wh.irc.Sendf(msg)
 	w.Write([]byte(`OK`))
