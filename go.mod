@@ -28,6 +28,7 @@ require (
 	golang.org/x/sys v0.0.0-20180816055513-1c9583448a9c
 	golang.org/x/text v0.3.0
 	gopkg.in/neurosnap/sentences.v1 v1.0.6
+	gopkg.in/rjz/githubhook.v0 v0.0.1
 	gopkg.in/yaml.v2 v2.2.1
 	mvdan.cc/xurls v1.1.0
 )

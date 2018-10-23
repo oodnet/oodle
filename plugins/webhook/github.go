@@ -7,7 +7,31 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"gopkg.in/rjz/githubhook.v0"
 )
+
+type PushEvent struct {
+	Ref     string `json:"ref"`
+	Compare string `json:"compare"`
+	Commits []struct {
+		ID        string `json:"id"`
+		Distinct  bool   `json:"distinct"`
+		Message   string `json:"message"`
+		Committer struct {
+			Name     string `json:"name"`
+			Email    string `json:"email"`
+			Username string `json:"username"`
+		} `json:"committer"`
+	} `json:"commits"`
+	Repository struct {
+		FullName string `json:"full_name"`
+	} `json:"repository"`
+	Pusher struct {
+		Name  string `json:"name"`
+		Email string `json:"email"`
+	} `json:"pusher"`
+}
 
 // gets branch name from ref
 func branch(ref string) string {
@@ -28,13 +52,13 @@ func gitio(ghurl string) string {
 }
 
 func (wh *webhook) PushEvent(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" || r.Header.Get("X-SECRET") != wh.secret {
+	hook, err := githubhook.Parse([]byte(wh.secret), r)
+	if err != nil {
 		http.Error(w, "Invalid secret", 400)
 		return
 	}
 	payload := PushEvent{}
-	err := json.NewDecoder(r.Body).Decode(&payload)
-	if err != nil {
+	if err := json.Unmarshal(hook.Payload, &payload); err != nil {
 		http.Error(w, "Malformed JSON", 400)
 		return
 	}

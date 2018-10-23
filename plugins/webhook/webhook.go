@@ -22,30 +22,8 @@ func Register(deps *oodle.Deps) error {
 	return nil
 }
 
-type PushEvent struct {
-	Ref     string `json:"ref"`
-	Compare string `json:"compare"`
-	Commits []struct {
-		ID        string `json:"id"`
-		Distinct  bool   `json:"distinct"`
-		Message   string `json:"message"`
-		Committer struct {
-			Name     string `json:"name"`
-			Email    string `json:"email"`
-			Username string `json:"username"`
-		} `json:"committer"`
-	} `json:"commits"`
-	Repository struct {
-		FullName string `json:"full_name"`
-	} `json:"repository"`
-	Pusher struct {
-		Name  string `json:"name"`
-		Email string `json:"email"`
-	} `json:"pusher"`
-}
-
 type webhook struct {
-	irc    oodle.IRCClient
+	irc    oodle.Sender
 	log    *logrus.Logger
 	secret string
 }
