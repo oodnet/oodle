@@ -7,8 +7,7 @@ before_install:
   - tar -xvf upx-3.94-amd64_linux.tar.xz
   - sudo mv upx-3.94-amd64_linux/upx /usr/local/bin
 env:
-  - GO111MODULE=on
-  - GOFLAGS=-mod=vendor
+  - GO111MODULE=on GOFLAGS=-mod=vendor
 cache:
   directories:
     - vendor/
