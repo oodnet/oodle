@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/lrstanley/girc"
 	"gopkg.in/rjz/githubhook.v0"
 )
 
@@ -25,7 +26,10 @@ type PushEvent struct {
 		} `json:"committer"`
 	} `json:"commits"`
 	Repository struct {
-		FullName string `json:"full_name"`
+		Name  string `json:"name"`
+		Owner struct {
+			Name string `json:"name"`
+		} `json:"owner"`
 	} `json:"repository"`
 	Pusher struct {
 		Name  string `json:"name"`
@@ -53,6 +57,13 @@ func gitio(ghurl string) string {
 	return "https://git.io/" + string(key)
 }
 
+func commits(i int) string {
+	if i == 1 {
+		return "commit"
+	}
+	return "commits"
+}
+
 func (wh *webhook) PushEvent(w http.ResponseWriter, r *http.Request) {
 	hook, err := githubhook.Parse([]byte(wh.secret), r)
 	if err != nil {
@@ -65,7 +76,7 @@ func (wh *webhook) PushEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// <oodle> godwhoa pushed 6 new commits to master: https://git.io/fAvUI
-	msg := fmt.Sprintf("%s pushed %d new commits to %s: %s", payload.Pusher.Name, len(payload.Commits), branch(payload.Ref), gitio(payload.Compare))
+	msg := fmt.Sprintf("{green}%s{c} pushed {b}%d{c} new %s to {purple}%s{c}: {blue}%s{c}", payload.Pusher.Name, len(payload.Commits), commits(len(payload.Commits)), branch(payload.Ref), gitio(payload.Compare))
 	for i, commit := range payload.Commits {
 		if !commit.Distinct {
 			continue
@@ -75,8 +86,8 @@ func (wh *webhook) PushEvent(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		// <oodle> oodle/master 0f7d2e5 Godwhoa: Seperate irc client from bot package
-		msg += fmt.Sprintf("\n%s %s %s: %s", payload.Repository.FullName, commit.ID[:7], commit.Committer.Username, commit.Message)
+		msg += fmt.Sprintf("\n{pink}%s{c}/{purple}%s{c} {green}%s{c} %s: %s", payload.Repository.Owner.Name, payload.Repository.Name, commit.ID[:7], commit.Committer.Username, commit.Message)
 	}
-	wh.irc.Sendf(msg)
+	wh.irc.Sendf(girc.Fmt(msg))
 	w.Write([]byte(`OK`))
 }
