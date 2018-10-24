@@ -15,6 +15,14 @@ dbpath = "store.sqlite"
 # secret = "7570abf6d5619dd0f9668551845ffe02a082fddf4a097306dae9b05ad6a2" # OFC change this
 # webhook_addr = "127.0.0.1:8000"
 
+# For github notifications
+# head over to https://github.com/{username/repo}/settings/hooks
+# set "Payload URL" to {webhook_addr}/github, "secret" to {secret}, "Content type" to "application/json"
+# then select "push" and "release" events from "Let me select individual events"
+# [github]
+# "godwhoa/oodle" = ["master"]
+
+
 url_blacklist = [
     "git.io"
 ]

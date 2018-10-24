@@ -53,6 +53,9 @@ func (wh *webhook) Send(w http.ResponseWriter, r *http.Request) {
 }
 
 func (wh *webhook) Listen(addr string) {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`oodle!`))
+	})
 	http.HandleFunc("/send", wh.Send)
 	http.HandleFunc("/github", wh.Github)
 	wh.log.Infof("Starting webhook on %s", addr)
