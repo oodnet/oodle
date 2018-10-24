@@ -1,0 +1,20 @@
+
+#!/bin/sh
+# Script to automatically restart a program
+# Usage: keepalive <cmd>
+
+WORKING_DIR=`pwd`
+
+if [ $# -lt 1 ]; then
+        echo "Usage: $0 <cmd>"
+        exit
+fi
+
+for (( c=1 ; ; c=$(($c+1)) ))
+do
+        cd $WORKING_DIR
+        #launch the process
+        $@
+        sleep 1
+        echo "Restarting [$1] for the $c (st/nd/rd/th) time."
+done
