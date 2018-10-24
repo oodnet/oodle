@@ -5,11 +5,10 @@ import (
 	"html"
 	"net/http"
 
-	"github.com/spf13/viper"
-
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/lrstanley/girc"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 func Register(deps *oodle.Deps) error {
@@ -17,7 +16,13 @@ func Register(deps *oodle.Deps) error {
 	if addr == "" {
 		return nil
 	}
-	hook := &webhook{irc: deps.IRC, log: deps.Logger, secret: viper.GetString("secret")}
+
+	hook := &webhook{
+		irc:    deps.IRC,
+		log:    deps.Logger,
+		secret: viper.GetString("secret"),
+		watch:  viper.GetStringMapStringSlice("github"),
+	}
 	go hook.Listen(addr)
 	return nil
 }
@@ -26,6 +31,8 @@ type webhook struct {
 	irc    oodle.Sender
 	log    *logrus.Logger
 	secret string
+	// godwhoa/oodle => ["master", "dev", ...]
+	watch map[string][]string
 }
 
 func (wh *webhook) Send(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +54,7 @@ func (wh *webhook) Send(w http.ResponseWriter, r *http.Request) {
 
 func (wh *webhook) Listen(addr string) {
 	http.HandleFunc("/send", wh.Send)
-	http.HandleFunc("/push", wh.PushEvent)
+	http.HandleFunc("/github", wh.Github)
 	wh.log.Infof("Starting webhook on %s", addr)
 	wh.log.Fatalf("Webhook failed: %v", http.ListenAndServe(addr, nil))
 }

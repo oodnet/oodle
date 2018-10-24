@@ -71,3 +71,12 @@ func RunCases(t *testing.T, cmd oodle.Command, tests []TestCase) {
 		assert.Equal(t, err, tt.Err)
 	}
 }
+
+func Contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}

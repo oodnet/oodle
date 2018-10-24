@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strings"
 
+	u "github.com/godwhoa/oodle/utils"
 	"github.com/lrstanley/girc"
 	"gopkg.in/rjz/githubhook.v0"
 )
@@ -38,8 +39,24 @@ type PushEvent struct {
 	} `json:"pusher"`
 }
 
+type ReleaseEvent struct {
+	Action  string `json:"action"`
+	Release struct {
+		HTMLURL string `json:"html_url"`
+		TagName string `json:"tag_name"`
+		Draft   bool   `json:"draft"`
+	} `json:"release"`
+	Repository struct {
+		FullName string `json:"full_name"`
+		Name     string `json:"name"`
+		Owner    struct {
+			Name string `json:"name"`
+		} `json:"owner"`
+	} `json:"repository"`
+}
+
 // gets branch name from ref
-func branch(ref string) string {
+func getBranch(ref string) string {
 	fragments := strings.Split(ref, "/")
 	return fragments[len(fragments)-1]
 }
@@ -58,27 +75,43 @@ func gitio(ghurl string) string {
 	return "https://git.io/" + string(key)
 }
 
-func commits(i int) string {
+func pluralize(i int) string {
 	if i == 1 {
 		return "commit"
 	}
 	return "commits"
 }
 
-func (wh *webhook) PushEvent(w http.ResponseWriter, r *http.Request) {
-	hook, err := githubhook.Parse([]byte(wh.secret), r)
-	if err != nil {
-		http.Error(w, "Invalid secret", 400)
+func (wh *webhook) handleReleaseEvent(event *ReleaseEvent) {
+	repository := event.Repository.FullName
+	tag := event.Release.TagName
+	isDraft := event.Release.Draft
+	url := gitio(event.Release.HTMLURL)
+	// skip over events from repos we aren't watching
+	// or it's a draft
+	if _, ok := wh.watch[repository]; !ok || isDraft {
 		return
 	}
-	payload := PushEvent{}
-	if err := json.Unmarshal(hook.Payload, &payload); err != nil {
-		http.Error(w, "Malformed JSON", 400)
+	msg := fmt.Sprintf("{gold}[%s]{r} %s released!: %s", repository, tag, url)
+	wh.irc.Sendf(girc.Fmt(msg))
+}
+
+func (wh *webhook) handlePushEvent(event *PushEvent) {
+	repository := event.Repository.FullName
+	pusher := event.Pusher.Name
+	compareurl := gitio(event.Compare)
+	branch := getBranch(event.Ref)
+	ncommits := len(event.Commits)
+
+	// skip over events from repos/branches we aren't watching
+	watching, ok := wh.watch[repository]
+	if !ok || !u.Contains(watching, branch) {
 		return
 	}
+
 	// <oodle> godwhoa pushed 6 new commits to master: https://git.io/fAvUI
-	msg := fmt.Sprintf("{gold}[%s]{r} {green}%s{c} pushed {b}%d{r} new %s to {green}%s{c}: {blue}%s{c}", payload.Repository.FullName, payload.Pusher.Name, len(payload.Commits), commits(len(payload.Commits)), branch(payload.Ref), gitio(payload.Compare))
-	for i, commit := range payload.Commits {
+	msg := fmt.Sprintf("{gold}[%s]{r} {green}%s{c} pushed {b}%d{r} new %s to {green}%s{c}: {blue}%s{c}", repository, pusher, ncommits, pluralize(ncommits), branch, compareurl)
+	for i, commit := range event.Commits {
 		if !commit.Distinct {
 			continue
 		}
@@ -90,5 +123,30 @@ func (wh *webhook) PushEvent(w http.ResponseWriter, r *http.Request) {
 		msg += fmt.Sprintf("\n{green}%s{c} %s: %s", commit.ID[:7], commit.Committer.Username, commit.Message)
 	}
 	wh.irc.Sendf(girc.Fmt(msg))
+}
+
+func (wh *webhook) Github(w http.ResponseWriter, r *http.Request) {
+	hook, err := githubhook.Parse([]byte(wh.secret), r)
+	if err != nil {
+		http.Error(w, "Invalid secret", 400)
+		return
+	}
+
+	switch hook.Event {
+	case "push":
+		event := &PushEvent{}
+		if err := json.Unmarshal(hook.Payload, event); err != nil {
+			http.Error(w, "Malformed JSON", 400)
+			return
+		}
+		wh.handlePushEvent(event)
+	case "release":
+		event := &ReleaseEvent{}
+		if err := json.Unmarshal(hook.Payload, event); err != nil {
+			http.Error(w, "Malformed JSON", 400)
+			return
+		}
+		wh.handleReleaseEvent(event)
+	}
 	w.Write([]byte(`OK`))
 }
