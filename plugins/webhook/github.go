@@ -26,8 +26,9 @@ type PushEvent struct {
 		} `json:"committer"`
 	} `json:"commits"`
 	Repository struct {
-		Name  string `json:"name"`
-		Owner struct {
+		FullName string `json:"full_name"`
+		Name     string `json:"name"`
+		Owner    struct {
 			Name string `json:"name"`
 		} `json:"owner"`
 	} `json:"repository"`
@@ -76,17 +77,17 @@ func (wh *webhook) PushEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// <oodle> godwhoa pushed 6 new commits to master: https://git.io/fAvUI
-	msg := fmt.Sprintf("{green}%s{c} pushed {b}%d{c} new %s to {purple}%s{c}: {blue}%s{c}", payload.Pusher.Name, len(payload.Commits), commits(len(payload.Commits)), branch(payload.Ref), gitio(payload.Compare))
+	msg := fmt.Sprintf("{gold}[%s]{r} {green}%s{c} pushed {b}%d{r} new %s to {green}%s{c}: {blue}%s{c}", payload.Repository.FullName, payload.Pusher.Name, len(payload.Commits), commits(len(payload.Commits)), branch(payload.Ref), gitio(payload.Compare))
 	for i, commit := range payload.Commits {
 		if !commit.Distinct {
 			continue
 		}
-		// only 3 commits
+		// only first 3 commits
 		if i == 3 {
 			break
 		}
-		// <oodle> oodle/master 0f7d2e5 Godwhoa: Seperate irc client from bot package
-		msg += fmt.Sprintf("\n{pink}%s{c}/{purple}%s{c} {green}%s{c} %s: %s", payload.Repository.Owner.Name, payload.Repository.Name, commit.ID[:7], commit.Committer.Username, commit.Message)
+		// <oodle> 0f7d2e5 Godwhoa: Seperate irc client from bot package
+		msg += fmt.Sprintf("\n{green}%s{c} %s: %s", commit.ID[:7], commit.Committer.Username, commit.Message)
 	}
 	wh.irc.Sendf(girc.Fmt(msg))
 	w.Write([]byte(`OK`))
