@@ -46,7 +46,7 @@ func Sed(sender oodle.Sender) oodle.Trigger {
 				sender.Sendf("Your last message was not found.")
 				return
 			}
-			newmsg := strings.ReplaceAll(lastmsg, args[1], args[2])
+			newmsg := strings.Replace(lastmsg, args[1], args[2], -1)
 			sender.Sendf("<%s> %s", nick, newmsg)
 		} else {
 			// store it as user's last msg.
