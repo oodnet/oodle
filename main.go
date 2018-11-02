@@ -9,6 +9,7 @@ import (
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/godwhoa/oodle/plugins/core"
 	"github.com/godwhoa/oodle/plugins/hackterm"
+	"github.com/godwhoa/oodle/plugins/sed"
 	"github.com/godwhoa/oodle/plugins/urban"
 	"github.com/godwhoa/oodle/plugins/webhook"
 	"github.com/godwhoa/oodle/plugins/wiki"
@@ -72,6 +73,7 @@ func main() {
 		hackterm.Register(deps),
 		urban.Register(deps),
 		wiki.Register(deps),
+		sed.Register(deps),
 		webhook.Register(deps),
 	); err != nil {
 		logger.Fatal(err)
