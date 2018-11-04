@@ -13,6 +13,7 @@ import (
 	"github.com/godwhoa/oodle/plugins/urban"
 	"github.com/godwhoa/oodle/plugins/webhook"
 	"github.com/godwhoa/oodle/plugins/wiki"
+	"github.com/godwhoa/oodle/plugins/invite"
 	_ "github.com/mattn/go-sqlite3"
 	flag "github.com/ogier/pflag"
 	"github.com/sirupsen/logrus"
@@ -74,6 +75,7 @@ func main() {
 		urban.Register(deps),
 		wiki.Register(deps),
 		sed.Register(deps),
+		invite.Register(deps),
 		webhook.Register(deps),
 	); err != nil {
 		logger.Fatal(err)

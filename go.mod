@@ -6,6 +6,8 @@ require (
 	github.com/cenkalti/backoff v1.1.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fsnotify/fsnotify v1.4.7
+	github.com/go-sql-driver/mysql v1.4.0
+	github.com/gofrs/uuid v3.1.0+incompatible
 	github.com/hako/durafmt v0.0.0-20180520121703-7b7ae1e72ead
 	github.com/hashicorp/hcl v0.0.0-20180404174102-ef8a98b0bbce
 	github.com/jmoiron/sqlx v0.0.0-20180614180643-0dae4fefe7c0
