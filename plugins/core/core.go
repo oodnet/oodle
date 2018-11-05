@@ -7,12 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/viper"
-
 	"github.com/PuerkitoBio/goquery"
 	m "github.com/godwhoa/oodle/middleware"
 	"github.com/godwhoa/oodle/oodle"
 	u "github.com/godwhoa/oodle/utils"
+	"github.com/spf13/viper"
 	"mvdan.cc/xurls"
 )
 
@@ -92,7 +91,7 @@ func List(bot oodle.Bot, sender oodle.Sender) oodle.Command {
 	return oodle.Command{
 		Prefix:      ".",
 		Name:        "list",
-		Description: "PMs you a list of all the commands",
+		Description: "List of all the commands",
 		Usage:       ".list",
 		Fn: func(nick string, args []string) (reply string, err error) {
 			msg := "Commands: "
@@ -112,7 +111,7 @@ func Echo() oodle.Command {
 	return oodle.Command{
 		Prefix:      "",
 		Name:        botNick + "!",
-		Description: "Exclamates your nick back!",
+		Description: "Ｅｘｃｌａｍａｔｅｓ　ｙｏｕｒ　ｎｉｃｋ　ｂａｃｋ！",
 		Usage:       botNick + "!",
 		Fn: func(nick string, args []string) (string, error) {
 			return ａs(nick + "!"), nil

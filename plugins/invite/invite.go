@@ -42,7 +42,7 @@ func Invite(sender oodle.Sender, log *logrus.Logger, db *sqlx.DB) oodle.Command 
 	return oodle.Command{
 		Prefix:      ".",
 		Name:        "invite",
-		Description: "Generates an random invite code.",
+		Description: "Generates a random invite code and PMs it.",
 		Usage:       ".invite",
 		Fn: func(nick string, args []string) (string, error) {
 			token, err := uuid.NewV4()
