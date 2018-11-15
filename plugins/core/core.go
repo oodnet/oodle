@@ -5,12 +5,11 @@ import (
 	"net/http"
 	"os/exec"
 	"strings"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	m "github.com/godwhoa/oodle/middleware"
 	"github.com/godwhoa/oodle/oodle"
-	u "github.com/godwhoa/oodle/utils"
+	"github.com/jmoiron/sqlx"
 	"github.com/spf13/viper"
 	"mvdan.cc/xurls"
 )
@@ -32,13 +31,14 @@ func Register(deps *oodle.Deps) error {
 	irc, bot, db := deps.IRC, deps.Bot, deps.DB
 	remindin := &RemindIn{irc, irc, NewReminderStore(db), NewMailBox(db)}
 	go remindin.Watch()
-	seenCmd, seenTrig := Seen()
+	seen := &Seen{db: sqlx.NewDb(db, "sqlite3")}
+	seen.Migrate()
 	tellCmd, tellTrig := Tell(irc, db)
 	bot.RegisterTriggers(
 		CustomCommands(irc),
 		ExecCommands(irc),
 		TitleScraper(irc),
-		seenTrig,
+		seen.Trigger(),
 		tellTrig,
 	)
 	bot.RegisterCommands(
@@ -47,7 +47,7 @@ func Register(deps *oodle.Deps) error {
 		List(bot, irc),
 		Help(bot),
 		remindin.Command(),
-		seenCmd,
+		seen.Command(),
 		tellCmd,
 	)
 
@@ -158,35 +158,6 @@ func ExecCommands(sender oodle.Sender) oodle.Trigger {
 			}()
 		}
 	}
-}
-
-// Seen tells you when it last saw someone
-func Seen() (oodle.Command, oodle.Trigger) {
-	store := make(map[string]time.Time)
-	cmd := oodle.Command{
-		Prefix:      ".",
-		Name:        "seen",
-		Description: "Tells you when it last saw someone",
-		Usage:       ".seen <nick>",
-		Fn: func(nick string, args []string) (string, error) {
-			if lastSeen, ok := store[args[0]]; ok {
-				return fmt.Sprintf("%s was last seen %s ago.", args[0], u.FmtTime(lastSeen)), nil
-			}
-			return fmt.Sprintf("No logs for %s", args[0]), nil
-		},
-	}
-	trigger := func(event interface{}) {
-		switch event.(type) {
-		case oodle.Join:
-			store[event.(oodle.Join).Nick] = time.Now()
-		case oodle.Leave:
-			store[event.(oodle.Leave).Nick] = time.Now()
-		case oodle.Message:
-			store[event.(oodle.Message).Nick] = time.Now()
-		}
-	}
-	cmd = m.Chain(cmd, m.MinArg(1))
-	return cmd, trigger
 }
 
 func newDocument(url string) (*goquery.Document, error) {
