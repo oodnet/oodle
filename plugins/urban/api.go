@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	u "github.com/godwhoa/oodle/utils"
@@ -44,7 +45,7 @@ func format(def definition) string {
 var ErrNoDefinition = errors.New("No definition found.")
 
 func define(word string) (string, error) {
-	response, err := http.Get("https://api.urbandictionary.com/v0/define?term=" + word)
+	response, err := http.Get("https://api.urbandictionary.com/v0/define?term=" + url.QueryEscape(word))
 	if err != nil {
 		return "", err
 	}
