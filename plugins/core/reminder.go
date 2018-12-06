@@ -25,6 +25,8 @@ type RemindIn struct {
 	mailbox *MailBox
 }
 
+const pollrate = 6 * time.Hour
+
 func (r *RemindIn) send(reminder Reminder) {
 	if !r.checker.InChannel(reminder.By) {
 		r.mailbox.Send(Letter{
@@ -44,11 +46,19 @@ func (r *RemindIn) fn(nick string, args []string) (string, error) {
 		return err.Error(), nil
 	}
 	msg := strings.Join(args[1:], " ")
-	r.store.Set(Reminder{
+	reminder := Reminder{
 		By:  nick,
 		Msg: msg,
 		At:  time.Now().Add(duration),
-	})
+	}
+	if duration < pollrate {
+		go func() {
+			time.Sleep(duration)
+			r.send(reminder)
+		}()
+		return "Reminder set!", nil
+	}
+	r.store.Set(reminder)
 	return "Reminder set!", nil
 }
 
@@ -66,7 +76,7 @@ func (r *RemindIn) sendout() {
 func (r *RemindIn) Watch() {
 	for {
 		r.sendout()
-		time.Sleep(1 * time.Second)
+		time.Sleep(pollrate)
 	}
 }
 
