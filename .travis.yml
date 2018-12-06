@@ -20,7 +20,8 @@ script:
   - GOOS=linux go build -o oodle_linux -a -tags netgo -ldflags "$VAR -s -w -extldflags -static"
   - GOOS=linux GOARCH=arm GOARM=7 CC=arm-linux-gnueabihf-gcc-4.8 CGO_ENABLED=1 go build -o oodle_linux_armv7 -a -tags netgo -ldflags "$VAR -s -w -linkmode external -extldflags -static"
   - upx --best oodle_linux
-  - tar -cvzf oodle_$VERSION.tar.gz oodle_linux scripts/keepalive config.toml
+  - tar -cvzf oodle_$VERSION_x86_64.tar.gz oodle_linux scripts/keepalive config.toml
+  - tar -cvzf oodle_$VERSION_arm7.tar.gz oodle_linux_armv7 scripts/keepalive config.toml
 deploy:
   provider: releases
   api_key:
