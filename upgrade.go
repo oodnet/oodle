@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"runtime"
 )
 
 type Release struct {
@@ -32,10 +33,15 @@ func fetchRelease() (*Release, error) {
 	return release, json.Unmarshal(body, release)
 }
 
+var archAsset = map[string]string{
+	"amd64": "oodle_linux",
+	"arm":   "oodle_linux_armv7",
+}
+
 // Extracts asset download url
 func extractAsset(r *Release) (string, error) {
 	for _, asset := range r.Assets {
-		if asset.Name == "oodle_linux" {
+		if asset.Name == archAsset[runtime.GOARCH] {
 			return asset.BrowserDownloadURL, nil
 		}
 	}
