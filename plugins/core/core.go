@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"net/http"
 	"os/exec"
+	"runtime"
+	"runtime/debug"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	m "github.com/godwhoa/oodle/middleware"
 	"github.com/godwhoa/oodle/oodle"
+	u "github.com/godwhoa/oodle/utils"
 	"github.com/jmoiron/sqlx"
 	"github.com/spf13/viper"
 	"mvdan.cc/xurls"
@@ -44,6 +47,8 @@ func Register(deps *oodle.Deps) error {
 	bot.RegisterCommands(
 		Echo(),
 		Version(),
+		GC(),
+		Memory(),
 		List(bot, irc),
 		Help(bot),
 		remindin.Command(),
@@ -62,6 +67,39 @@ func Version() oodle.Command {
 		Usage:       ".version",
 		Fn: func(nick string, args []string) (reply string, err error) {
 			return fmt.Sprintf("Version: %s Commit: %s", oodle.Version, oodle.Commit), nil
+		},
+	}
+}
+
+func GC() oodle.Command {
+	return oodle.Command{
+		Prefix:      ".",
+		Name:        "gc",
+		Description: "Runs GC; debug purpose only.",
+		Usage:       ".gc",
+		Fn: func(nick string, args []string) (reply string, err error) {
+			runtime.GC()
+			debug.FreeOSMemory()
+			return "Ran runtime.GC() and debug.FreeOSMemory()", nil
+		},
+	}
+}
+
+func Memory() oodle.Command {
+	return oodle.Command{
+		Prefix:      ".",
+		Name:        "mem",
+		Description: "Shows memory usage",
+		Usage:       ".mem",
+		Fn: func(nick string, args []string) (reply string, err error) {
+			var m runtime.MemStats
+			var gc debug.GCStats
+			runtime.ReadMemStats(&m)
+			debug.ReadGCStats(&gc)
+			alloc := m.Alloc / 1024 / 1024
+			talloc := m.TotalAlloc / 1024 / 1024
+			sys := m.Sys / 1024 / 1024
+			return fmt.Sprintf("Alloc: %d MiB TotalAlloc: %d MiB Sys: %d MiB LastGC: %s; https://godoc.org/runtime#MemStats", alloc, talloc, sys, u.FmtTime(gc.LastGC)), nil
 		},
 	}
 }
@@ -169,10 +207,11 @@ func newDocument(url string) (*goquery.Document, error) {
 
 	req.Header.Set("User-Agent", "Oodlebot/1.0")
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := u.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
+	defer res.Body.Close()
 
 	return goquery.NewDocumentFromResponse(res)
 }
