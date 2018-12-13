@@ -4,23 +4,32 @@
 
 > **oodle** is a simple irc bot for oodnet. It is also a rewrite of ezbot framework 
 
-## Timeline
-- [x] Base framework<br>
-- [x] Config. and logging<br>
-- [x] Make it robust (reconnect and recovery)<br>
-- [x] Core commands<br>
-- [ ] oodnet integration<br>
-- [ ] More polish (.help <command> etc.)<br>
-- [ ] Simplify design if possible<br>
+## Features 
+- Title scraper
+- Reminder
+- Tell
+- Seen
+- Built-in upgrade mechanism
+- Github notifier (alternative to github's IRC service)
+- Webhook
+- Urban
+- Wiki
+- Find and Replace with sed-like syntax
+- Custom Commands
+
+## Supported platforms
+- Linux AMD64
+- Linux ARMv7
 
 ## Usage
 ```bash
 # Download latest build
-curl -s https://api.github.com/repos/godwhoa/oodle/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep -v arm | xargs -L 1 wget
+# Note: remove -v from grep if you are on ARM
+curl -s https://api.github.com/repos/godwhoa/oodle/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep -v arm | xargs -L 1 wget -O oodle
 # Edit config
 vim config.toml
 # Make it executable
-chmod +x oodle_linux_static
+chmod +x oodle_linux
 # Run!
-./oodle_linux_static
+./oodle_linux
 ```
