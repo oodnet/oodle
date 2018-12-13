@@ -207,13 +207,12 @@ func newDocument(url string) (*goquery.Document, error) {
 
 	req.Header.Set("User-Agent", "Oodlebot/1.0")
 
-	res, err := u.HTTPClient.Do(req)
+	response, err := u.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
-
-	return goquery.NewDocumentFromResponse(res)
+	response.Body = u.LimitBody(response.Body, 1)
+	return goquery.NewDocumentFromResponse(response)
 }
 
 func checker() func(url string) bool {

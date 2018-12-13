@@ -3,10 +3,11 @@ package hackterm
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
-	"net/http"
+	"fmt"
 	"strings"
 	"time"
+
+	u "github.com/godwhoa/oodle/utils"
 )
 
 var (
@@ -32,36 +33,12 @@ type searchResults struct {
 	} `json:"body"`
 }
 
-// POST makes a POST req. while pretending to be a real browser :)
-func POST(url, form string) ([]byte, error) {
-	req, err := http.NewRequest("POST", url, strings.NewReader(form))
-	if err != nil {
-		return []byte{}, err
-	}
-
-	req.Header.Set("Pragma", "no-cache")
-	req.Header.Set("Origin", "https://www.hackterms.com")
-	req.Header.Set("Accept-Encoding", "gzip, deflate, br")
-	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.119 Safari/537.36")
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Set("Accept", "*/*")
-	req.Header.Set("Cache-Control", "no-cache")
-	req.Header.Set("X-Requested-With", "XMLHttpRequest")
-	req.Header.Set("Connection", "keep-alive")
-	req.Header.Set("Referer", "https://www.hackterms.com/")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return []byte{}, err
-	}
-	defer resp.Body.Close()
-	return ioutil.ReadAll(resp.Body)
-}
-
 func search(term string) (*searchResults, error) {
 	form := `term=` + term
-	body, _ := POST("https://www.hackterms.com/search", form)
+	body, err := u.FakePOST("https://www.hackterms.com/search", strings.NewReader(form))
+	if err != nil {
+		return nil, err
+	}
 
 	results := &searchResults{}
 	if err := json.Unmarshal(body, results); err != nil {
@@ -76,12 +53,17 @@ func search(term string) (*searchResults, error) {
 
 func getDefinitions(term string) (*definitions, error) {
 	form := `term=` + term + `&user=false`
-	body, _ := POST("https://www.hackterms.com/get-definitions", form)
+	body, err := u.FakePOST("https://www.hackterms.com/get-definitions", strings.NewReader(form))
+	fmt.Println(string(body))
+	if err != nil {
+		return nil, err
+	}
 
 	defs := &definitions{}
 	if err := json.Unmarshal(body, defs); err != nil {
 		return nil, err
 	}
+
 	if defs.Status != "success" || defs.Count < 1 {
 		return nil, errNoDefinitions
 	}

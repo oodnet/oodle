@@ -3,9 +3,10 @@ package wiki
 import (
 	"encoding/json"
 	"errors"
-	"net/http"
 	"net/url"
 	"strings"
+
+	u "github.com/godwhoa/oodle/utils"
 )
 
 const endpoint = "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search="
@@ -13,13 +14,8 @@ const endpoint = "https://en.wikipedia.org/w/api.php?action=opensearch&format=js
 var ErrNoResults = errors.New("No results.")
 
 func search(term string) ([][]string, error) {
-	response, err := http.Get(endpoint + url.QueryEscape(term))
-	if err != nil {
-		return [][]string{}, err
-	}
-
 	jsondata := []json.RawMessage{}
-	err = json.NewDecoder(response.Body).Decode(&jsondata)
+	err := u.GetJSON(endpoint+url.QueryEscape(term), &jsondata)
 	if err != nil {
 		return [][]string{}, err
 	}
