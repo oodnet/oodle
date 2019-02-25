@@ -47,8 +47,8 @@ func Register(deps *oodle.Deps) error {
 	bot.RegisterCommands(
 		Echo(),
 		Version(),
-		GC(),
-		Memory(),
+		GC(irc),
+		Memory(irc),
 		List(bot, irc),
 		Help(bot),
 		remindin.Command(),
@@ -71,8 +71,8 @@ func Version() oodle.Command {
 	}
 }
 
-func GC() oodle.Command {
-	return oodle.Command{
+func GC(checker oodle.Checker) oodle.Command {
+	cmd := oodle.Command{
 		Prefix:      ".",
 		Name:        "gc",
 		Description: "Runs GC; debug purpose only.",
@@ -83,10 +83,11 @@ func GC() oodle.Command {
 			return "Ran runtime.GC() and debug.FreeOSMemory()", nil
 		},
 	}
+	return m.Chain(cmd, m.AdminOnly(checker))
 }
 
-func Memory() oodle.Command {
-	return oodle.Command{
+func Memory(checker oodle.Checker) oodle.Command {
+	cmd := oodle.Command{
 		Prefix:      ".",
 		Name:        "mem",
 		Description: "Shows memory usage",
@@ -102,6 +103,7 @@ func Memory() oodle.Command {
 			return fmt.Sprintf("Alloc: %d MiB TotalAlloc: %d MiB Sys: %d MiB LastGC: %s; https://godoc.org/runtime#MemStats", alloc, talloc, sys, u.FmtTime(gc.LastGC)), nil
 		},
 	}
+	return m.Chain(cmd, m.AdminOnly(checker))
 }
 
 // Help gives help info for commands
