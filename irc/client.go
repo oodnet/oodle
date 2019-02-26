@@ -207,7 +207,7 @@ func (irc *IRCClient) IsAdmin(nick string) bool {
 	if user == nil || !user.InChannel(irc.cfg.Channel) {
 		return false
 	}
-	perms, ok := user.Perms.Lookup(nick)
+	perms, ok := user.Perms.Lookup(irc.cfg.Channel)
 	return ok && perms.IsAdmin()
 }
 
