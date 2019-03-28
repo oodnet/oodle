@@ -9,7 +9,6 @@ import (
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/godwhoa/oodle/plugins/core"
 	"github.com/godwhoa/oodle/plugins/hackterm"
-	"github.com/godwhoa/oodle/plugins/invite"
 	"github.com/godwhoa/oodle/plugins/oodnet"
 	"github.com/godwhoa/oodle/plugins/sed"
 	"github.com/godwhoa/oodle/plugins/urban"
@@ -76,7 +75,6 @@ func main() {
 		urban.Register(deps),
 		wiki.Register(deps),
 		sed.Register(deps),
-		invite.Register(deps),
 		webhook.Register(deps),
 		oodnet.Register(deps),
 	); err != nil {
