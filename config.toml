@@ -16,6 +16,7 @@ dbpath = "store.sqlite"
 # webhook_addr = "127.0.0.1:8000"
 
 # For github notifications
+# First make oodle's webhook publicly available and set it's secret
 # head over to https://github.com/{username/repo}/settings/hooks
 # set "Payload URL" to {webhook_addr}/github, "secret" to {secret}, "Content type" to "application/json"
 # then select "push" and "release" events from "Let me select individual events"
