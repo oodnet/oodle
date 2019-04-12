@@ -52,18 +52,34 @@ func (t *MailBox) Send(l Letter) error {
 	return err
 }
 
-func (t *MailBox) Letters(to string) []*Letter {
+func (t *MailBox) Get(id uint) (*Letter, error) {
+	letter := &Letter{}
+	err := t.db.Get(letter, `SELECT * FROM letters WHERE "id" = ? AND "deleted_at" IS NULL;`, id)
+	return letter, err
+}
+
+func (t *MailBox) LettersTo(to string) []*Letter {
 	letters := []*Letter{}
 	t.db.Select(&letters, `SELECT * FROM letters WHERE "to" = ? AND "deleted_at" IS NULL;`, to)
 	return letters
 }
 
-func (t *MailBox) Delete(letters []*Letter) {
+func (t *MailBox) LettersFrom(from string) []*Letter {
+	letters := []*Letter{}
+	t.db.Select(&letters, `SELECT * FROM letters WHERE "from" = ? AND "deleted_at" IS NULL ORDER BY "when" DESC;`, from)
+	return letters
+}
+
+func (t *MailBox) BatchDelete(letters []*Letter) {
 	tx := t.db.MustBegin()
 	for _, letter := range letters {
 		tx.Exec(`UPDATE letters SET "deleted_at" = ? WHERE id = ?;`, time.Now(), letter.ID)
 	}
 	tx.Commit()
+}
+
+func (t *MailBox) Delete(id uint) {
+	t.db.Exec(`UPDATE letters SET "deleted_at" = ? WHERE id = ?;`, time.Now(), id)
 }
 
 func (t *MailBox) HasMail(to string) bool {

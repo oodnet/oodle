@@ -36,7 +36,7 @@ func Register(deps *oodle.Deps) error {
 	go remindin.Watch()
 	seen := &Seen{db: sqlx.NewDb(db, "sqlite3")}
 	seen.Migrate()
-	tellCmd, tellTrig := Tell(irc, db)
+	tellCmds, tellTrig := Tell(irc, db)
 	bot.RegisterTriggers(
 		CustomCommands(irc),
 		ExecCommands(irc),
@@ -44,6 +44,7 @@ func Register(deps *oodle.Deps) error {
 		seen.Trigger(),
 		tellTrig,
 	)
+	bot.RegisterCommands(tellCmds...)
 	bot.RegisterCommands(
 		Echo(),
 		Version(),
@@ -53,7 +54,6 @@ func Register(deps *oodle.Deps) error {
 		Help(bot),
 		remindin.Command(),
 		seen.Command(),
-		tellCmd,
 	)
 
 	return nil

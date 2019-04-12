@@ -11,7 +11,7 @@ import (
 	"gopkg.in/neurosnap/sentences.v1/english"
 )
 
-func min(x, y int) int {
+func Min(x, y int) int {
 	if x < y {
 		return x
 	}
