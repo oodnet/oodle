@@ -8,12 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/viper"
-
 	"github.com/cenkalti/backoff"
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/lrstanley/girc"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // Custom Dialer which prioritizes ipv4
@@ -220,6 +219,13 @@ func (irc *IRCClient) IsRegistered(nick string) bool {
 // Sendf works like printf but for irc msgs.
 func (irc *IRCClient) Sendf(format string, a ...interface{}) {
 	message := fmt.Sprintf(format, a...)
+	for _, msg := range strings.Split(message, "\n") {
+		irc.client.Cmd.Message(irc.cfg.Channel, msg)
+	}
+}
+
+// Sendnl works like Send but interprets \n.
+func (irc *IRCClient) Sendnl(message string) {
 	for _, msg := range strings.Split(message, "\n") {
 		irc.client.Cmd.Message(irc.cfg.Channel, msg)
 	}

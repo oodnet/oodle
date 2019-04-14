@@ -37,6 +37,7 @@ type Checker interface {
 
 type Sender interface {
 	Send(message string)
+	Sendnl(message string)
 	SendTo(user, message string)
 	Sendf(format string, a ...interface{})
 }

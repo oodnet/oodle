@@ -3,10 +3,9 @@ package bot
 import (
 	"strings"
 
-	"github.com/spf13/viper"
-
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 type Bot struct {
@@ -63,7 +62,7 @@ func (bot *Bot) handleCommand(nick string, message string) {
 	case oodle.ErrUsage:
 		bot.irc.Sendf("Usage: " + command.Usage)
 	case nil:
-		bot.irc.Sendf(reply)
+		bot.irc.Sendnl(reply)
 	default:
 		bot.log.Error(err)
 	}
