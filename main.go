@@ -9,6 +9,7 @@ import (
 	"github.com/godwhoa/oodle/oodle"
 	"github.com/godwhoa/oodle/plugins/core"
 	"github.com/godwhoa/oodle/plugins/hackterm"
+	"github.com/godwhoa/oodle/plugins/lazy"
 	"github.com/godwhoa/oodle/plugins/oodnet"
 	"github.com/godwhoa/oodle/plugins/sed"
 	"github.com/godwhoa/oodle/plugins/urban"
@@ -77,6 +78,7 @@ func main() {
 		sed.Register(deps),
 		webhook.Register(deps),
 		oodnet.Register(deps),
+		lazy.Register(deps),
 	); err != nil {
 		logger.Fatal(err)
 	}
