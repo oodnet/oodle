@@ -179,6 +179,8 @@ func (irc *IRCClient) onAll(c *girc.Client, e girc.Event) {
 		irc.sendEvent(oodle.Leave{Nick: nick})
 	case girc.PRIVMSG:
 		irc.sendEvent(oodle.Message{Nick: nick, Msg: msg})
+	case girc.RPL_CHANNELMODEIS:
+		irc.sendEvent(oodle.Joined{})
 	}
 }
 

@@ -13,3 +13,5 @@ type Join struct {
 type Leave struct {
 	Nick string
 }
+
+type Joined struct{}
