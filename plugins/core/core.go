@@ -8,6 +8,8 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"time"
+
 	"github.com/PuerkitoBio/goquery"
 	m "github.com/godwhoa/oodle/middleware"
 	"github.com/godwhoa/oodle/oodle"
@@ -32,8 +34,10 @@ func ａs(text string) string {
 // Register wires everything up
 func Register(deps *oodle.Deps) error {
 	irc, bot, db := deps.IRC, deps.Bot, deps.DB
-	remindin := &RemindIn{irc, irc, NewReminderStore(db), NewMailBox(db)}
+	remindin := &RemindIn{irc, irc, NewReminderStore(db), NewMailBox(db), make(chan bool)}
 	go remindin.Watch()
+	// TODO: move this to an on-join hook
+	time.AfterFunc(time.Second*60, remindin.scheduleExisting)
 	seen := &Seen{db: sqlx.NewDb(db, "sqlite3")}
 	seen.Migrate()
 	tellCmds, tellTrig := Tell(irc, db)

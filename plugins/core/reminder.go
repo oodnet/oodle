@@ -19,10 +19,11 @@ import (
 */
 
 type RemindIn struct {
-	checker oodle.Checker
-	sender  oodle.Sender
-	store   *ReminderStore
-	mailbox *MailBox
+	checker  oodle.Checker
+	sender   oodle.Sender
+	store    *ReminderStore
+	mailbox  *MailBox
+	queryNow chan bool
 }
 
 const pollrate = 6 * time.Hour
@@ -51,14 +52,10 @@ func (r *RemindIn) fn(nick string, args []string) (string, error) {
 		Msg: msg,
 		At:  time.Now().Add(duration),
 	}
-	if duration < pollrate {
-		go func() {
-			time.Sleep(duration)
-			r.send(reminder)
-		}()
-		return "Reminder set!", nil
-	}
 	r.store.Set(reminder)
+	time.AfterFunc(duration, func() {
+		r.queryNow <- true
+	})
 	return "Reminder set!", nil
 }
 
@@ -74,9 +71,24 @@ func (r *RemindIn) sendout() {
 
 // Watch watches the store and sends out reminder that need to be out
 func (r *RemindIn) Watch() {
+	t := time.NewTicker(pollrate)
 	for {
-		r.sendout()
-		time.Sleep(pollrate)
+		select {
+		case <-r.queryNow:
+			r.sendout()
+		case <-t.C:
+			r.sendout()
+		}
+	}
+}
+
+func (r *RemindIn) scheduleExisting() {
+	reminders := r.store.Reminders()
+	for _, reminder := range reminders {
+		duration := reminder.At.Sub(time.Now())
+		time.AfterFunc(duration, func() {
+			r.queryNow <- true
+		})
 	}
 }
 
