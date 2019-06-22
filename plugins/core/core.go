@@ -9,10 +9,12 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/godwhoa/oodle/events"
 	m "github.com/godwhoa/oodle/middleware"
 	"github.com/godwhoa/oodle/oodle"
 	u "github.com/godwhoa/oodle/utils"
 	"github.com/jmoiron/sqlx"
+	"github.com/lrstanley/girc"
 	"github.com/spf13/viper"
 	"mvdan.cc/xurls"
 )
@@ -34,11 +36,10 @@ func Register(deps *oodle.Deps) error {
 	irc, bot, db := deps.IRC, deps.Bot, deps.DB
 	remindin := &RemindIn{irc, irc, NewReminderStore(db), NewMailBox(db), make(chan bool)}
 	go remindin.Watch()
-	irc.OnEvent(func(e interface{}) {
-		if _, ok := e.(oodle.Joined); !ok {
-			return
+	irc.OnEvent(func(e girc.Event) {
+		if events.Is(e, events.JOINED) {
+			remindin.scheduleExisting()
 		}
-		remindin.scheduleExisting()
 	})
 	seen := &Seen{db: sqlx.NewDb(db, "sqlite3")}
 	seen.Migrate()
@@ -168,12 +169,12 @@ func Echo() oodle.Command {
 // CustomCommands lets you make custom commands via. config
 func CustomCommands(irc oodle.IRCClient) oodle.Trigger {
 	commands := viper.GetStringMapString("custom_commands")
-	return func(event interface{}) {
-		message, ok := event.(oodle.Message)
-		if !ok {
+	trigger := func(event girc.Event) {
+		if !events.Is(event, events.MESSAGE) {
 			return
 		}
-		args := strings.Split(strings.TrimSpace(message.Msg), " ")
+		_, message := events.Message(event)
+		args := strings.Split(strings.TrimSpace(message), " ")
 		if len(args) < 1 {
 			return
 		}
@@ -181,18 +182,19 @@ func CustomCommands(irc oodle.IRCClient) oodle.Trigger {
 			irc.Send(msg)
 		}
 	}
+	return oodle.Trigger(trigger)
 }
 
 // ExecCommands is similar to custom commands but instead of sending fixed message
 // It runs/sends output of configured shell command
 func ExecCommands(sender oodle.Sender) oodle.Trigger {
 	commands := viper.GetStringMapString("exec_commands")
-	return func(event interface{}) {
-		message, ok := event.(oodle.Message)
-		if !ok {
+	trigger := func(event girc.Event) {
+		if !events.Is(event, events.MESSAGE) {
 			return
 		}
-		args := strings.Split(strings.TrimSpace(message.Msg), " ")
+		_, message := events.Message(event)
+		args := strings.Split(strings.TrimSpace(message), " ")
 		if len(args) < 1 {
 			return
 		}
@@ -204,6 +206,7 @@ func ExecCommands(sender oodle.Sender) oodle.Trigger {
 			}()
 		}
 	}
+	return oodle.Trigger(trigger)
 }
 
 func newDocument(url string) (*goquery.Document, error) {
@@ -240,12 +243,12 @@ func TitleScraper(irc oodle.IRCClient) oodle.Trigger {
 	urlReg := xurls.Strict
 	isblacklisted := checker()
 
-	return func(event interface{}) {
-		message, ok := event.(oodle.Message)
-		if !ok {
+	return func(event girc.Event) {
+		if !events.Is(event, events.MESSAGE) {
 			return
 		}
-		urls := urlReg.FindAllString(message.Msg, -1)
+		_, message := events.Message(event)
+		urls := urlReg.FindAllString(message, -1)
 		for _, url := range urls {
 			if url != "" && !isblacklisted(url) {
 				doc, err := newDocument(url)

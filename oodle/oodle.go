@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/lrstanley/girc"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,13 +19,13 @@ type Command struct {
 }
 
 // Trigger is a basic event handler
-type Trigger func(event interface{})
+type Trigger func(event girc.Event)
 
 // IRCClient is a simplified client given to plugins.
 type IRCClient interface {
 	Connect() error
 	Close()
-	OnEvent(callback func(event interface{}))
+	OnEvent(callback func(event girc.Event))
 	Sender
 	Checker
 }

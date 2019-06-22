@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/godwhoa/oodle/events"
 	m "github.com/godwhoa/oodle/middleware"
 	"github.com/godwhoa/oodle/oodle"
 	u "github.com/godwhoa/oodle/utils"
 	"github.com/jmoiron/sqlx"
+	"github.com/lrstanley/girc"
 )
 
 // Seen tells you when it last saw someone
@@ -38,20 +40,13 @@ func (s *Seen) get(nick string) (lastseen time.Time, err error) {
 }
 
 func (s *Seen) Trigger() oodle.Trigger {
-	return func(event interface{}) {
-		nick := ""
-		switch event.(type) {
-		case oodle.Join:
-			nick = event.(oodle.Join).Nick
-		case oodle.Leave:
-			nick = event.(oodle.Leave).Nick
-		case oodle.Message:
-			nick = event.(oodle.Message).Nick
-		}
-		if nick != "" {
+	trigger := func(event girc.Event) {
+		nick := events.Nick(event)
+		if nick != "" && events.Any(event, events.JOIN, events.LEAVE, events.MESSAGE) {
 			s.update(nick)
 		}
 	}
+	return oodle.Trigger(trigger)
 }
 
 func (s *Seen) Command() oodle.Command {

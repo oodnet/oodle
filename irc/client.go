@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff"
-	"github.com/godwhoa/oodle/oodle"
 	"github.com/lrstanley/girc"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -48,7 +47,7 @@ type IRCClient struct {
 	nick      string
 	channel   string
 	cfg       *Config
-	callbacks []func(event interface{})
+	callbacks []func(event girc.Event)
 	client    *girc.Client
 	log       *logrus.Logger
 	whoisreq  chan girc.Event
@@ -169,30 +168,17 @@ func (irc *IRCClient) onAll(c *girc.Client, e girc.Event) {
 	if e.IsFromUser() || e.Source == nil || e.Source.Name == irc.cfg.Nick {
 		return
 	}
-	nick, msg := e.Source.Name, e.Trailing
+	for _, callback := range irc.callbacks {
+		callback(e)
+	}
 	switch e.Command {
 	case girc.RPL_WHOISUSER, girc.ERR_NOSUCHNICK:
 		irc.whoisreq <- e
-	case girc.JOIN:
-		irc.sendEvent(oodle.Join{Nick: nick})
-	case girc.PART:
-		irc.sendEvent(oodle.Leave{Nick: nick})
-	case girc.PRIVMSG:
-		irc.sendEvent(oodle.Message{Nick: nick, Msg: msg})
-	case girc.RPL_CHANNELMODEIS:
-		irc.sendEvent(oodle.Joined{})
-	}
-}
-
-// Sends an event to all callbacks
-func (irc *IRCClient) sendEvent(event interface{}) {
-	for _, callback := range irc.callbacks {
-		callback(event)
 	}
 }
 
 // OnEvent registers a callback
-func (irc *IRCClient) OnEvent(callback func(event interface{})) {
+func (irc *IRCClient) OnEvent(callback func(event girc.Event)) {
 	irc.callbacks = append(irc.callbacks, callback)
 }
 

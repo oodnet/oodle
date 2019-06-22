@@ -4,7 +4,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/godwhoa/oodle/events"
 	"github.com/godwhoa/oodle/oodle"
+	"github.com/lrstanley/girc"
 )
 
 func Register(deps *oodle.Deps) error {
@@ -28,12 +30,11 @@ func SedHelp() oodle.Command {
 
 func Sed(sender oodle.Sender) oodle.Trigger {
 	usermsgs := make(map[string]string)
-	return func(event interface{}) {
-		message, ok := event.(oodle.Message)
-		if !ok {
+	trigger := func(event girc.Event) {
+		if !events.Is(event, events.MESSAGE) {
 			return
 		}
-		msg, nick := message.Msg, message.Nick
+		nick, msg := events.Message(event)
 		// Check if it is a sed command
 		if strings.HasPrefix(msg, "s/") && strings.Count(msg, "/") >= 2 {
 			args := strings.Split(msg, "/")
@@ -61,4 +62,5 @@ func Sed(sender oodle.Sender) oodle.Trigger {
 			usermsgs[nick] = msg
 		}
 	}
+	return oodle.Trigger(trigger)
 }

@@ -3,7 +3,9 @@ package bot
 import (
 	"strings"
 
+	"github.com/godwhoa/oodle/events"
 	"github.com/godwhoa/oodle/oodle"
+	"github.com/lrstanley/girc"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -26,9 +28,9 @@ func NewBot(logger *logrus.Logger, ircClient oodle.IRCClient) *Bot {
 // Start makes a conn., stats a readloop and uses the config
 func (bot *Bot) Start() error {
 	bot.log.Info("Connecting...")
-	bot.irc.OnEvent(func(event interface{}) {
-		if msg, ok := event.(oodle.Message); ok {
-			bot.handleCommand(msg.Nick, msg.Msg)
+	bot.irc.OnEvent(func(event girc.Event) {
+		if events.Is(event, events.MESSAGE) {
+			bot.handleCommand(events.Message(event))
 		}
 	})
 	bot.irc.OnEvent(bot.relayTrigger)
@@ -40,7 +42,7 @@ func (bot *Bot) Stop() {
 	bot.irc.Close()
 }
 
-func (bot *Bot) relayTrigger(event interface{}) {
+func (bot *Bot) relayTrigger(event girc.Event) {
 	for _, trigger := range bot.triggers {
 		trigger(event)
 	}

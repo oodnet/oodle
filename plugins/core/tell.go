@@ -7,9 +7,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/godwhoa/oodle/events"
 	m "github.com/godwhoa/oodle/middleware"
 	"github.com/godwhoa/oodle/oodle"
 	u "github.com/godwhoa/oodle/utils"
+	"github.com/lrstanley/girc"
 )
 
 // Tell lets users send a msg. to an inactive user
@@ -107,10 +109,9 @@ func Tell(irc oodle.IRCClient, db *sql.DB) ([]oodle.Command, oodle.Trigger) {
 		}
 		store.BatchDelete(letters)
 	}
-	trigger := func(event interface{}) {
-		switch event.(type) {
-		case oodle.Message:
-			notify(event.(oodle.Message).Nick)
+	trigger := func(event girc.Event) {
+		if events.Is(event, events.MESSAGE) {
+			notify(events.Nick(event))
 		}
 	}
 	tell = m.Chain(tell, m.MinArg(2))
