@@ -8,6 +8,8 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"bytes"
+
 	"github.com/PuerkitoBio/goquery"
 	"github.com/godwhoa/oodle/events"
 	m "github.com/godwhoa/oodle/middleware"
@@ -202,6 +204,7 @@ func ExecCommands(sender oodle.Sender) oodle.Trigger {
 			go func() {
 				cmd := exec.Command("bash", "-c", command)
 				output, _ := cmd.CombinedOutput()
+				bytes.ReplaceAll(output, []byte(`\n`), []byte(`  `))
 				sender.Send(string(output))
 			}()
 		}
