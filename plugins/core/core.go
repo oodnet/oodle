@@ -204,7 +204,7 @@ func ExecCommands(sender oodle.Sender) oodle.Trigger {
 			go func() {
 				cmd := exec.Command("bash", "-c", command)
 				output, _ := cmd.CombinedOutput()
-				bytes.ReplaceAll(output, []byte(`\n`), []byte(`  `))
+				output = bytes.ReplaceAll(output, []byte("\n"), []byte("  "))
 				sender.Send(string(output))
 			}()
 		}
