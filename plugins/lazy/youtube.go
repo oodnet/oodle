@@ -4,13 +4,19 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/spf13/viper"
+
 	m "github.com/godwhoa/oodle/middleware"
 	"github.com/godwhoa/oodle/oodle"
 )
 
 func Register(deps *oodle.Deps) error {
 	bot := deps.Bot
+	irc := deps.IRC
 	bot.RegisterCommands(YoutubeSearch())
+	if viper.InConfig("reddit_search") {
+		bot.RegisterTriggers(RedditSearch(irc))
+	}
 	return nil
 }
 

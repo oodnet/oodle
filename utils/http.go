@@ -50,7 +50,13 @@ func LimitBody(rc io.ReadCloser, megaBytes int64) io.ReadCloser {
 }
 
 func GetJSON(url string, data interface{}) error {
-	response, err := HTTPClient.Get(url)
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+	request.Header.Set("User-Agent", "Oodle/v1")
+
+	response, err := HTTPClient.Do(request)
 	if err != nil {
 		return err
 	}

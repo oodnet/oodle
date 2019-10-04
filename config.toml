@@ -40,3 +40,6 @@ disabled_commands = [
 
 #[exec_commands]
 #".fortune" = "fortune -s"
+
+# [reddit_search]
+# "r/hardware" = ['.*(N|n)ew\s(I|i)ntel.*', "Intel CPU"]
