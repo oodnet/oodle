@@ -1,8 +1,9 @@
 language: go
 go:
   - "1.13.x"
+dist: bionic
 before_install:
-  - sudo apt-get install gcc-4.8-arm-linux-gnueabihf
+  - sudo apt-get install gcc-8-arm-linux-gnueabihf
   - wget https://github.com/upx/upx/releases/download/v3.94/upx-3.94-amd64_linux.tar.xz
   - tar -xvf upx-3.94-amd64_linux.tar.xz
   - sudo mv upx-3.94-amd64_linux/upx /usr/local/bin
