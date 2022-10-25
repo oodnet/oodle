@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"strings"
 
-	u "github.com/godwhoa/oodle/utils"
 	"github.com/lrstanley/girc"
+	u "github.com/oodnet/oodle/utils"
 	"gopkg.in/rjz/githubhook.v0"
 )
 

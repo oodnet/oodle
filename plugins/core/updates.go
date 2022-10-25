@@ -3,8 +3,8 @@ package core
 import (
 	"time"
 
-	"github.com/godwhoa/oodle/oodle"
-	u "github.com/godwhoa/oodle/utils"
+	"github.com/oodnet/oodle/oodle"
+	u "github.com/oodnet/oodle/utils"
 )
 
 type Release struct {
@@ -33,7 +33,7 @@ type Updates struct {
 
 func (up *Updates) Notify() {
 	release := Release{}
-	err := u.GetJSON("https://api.github.com/repos/godwhoa/oodle/releases/latest", &release)
+	err := u.GetJSON("https://api.github.com/repos/oodnet/oodle/releases/latest", &release)
 	if err != nil {
 		return // log at least at debug level maybe?
 	}

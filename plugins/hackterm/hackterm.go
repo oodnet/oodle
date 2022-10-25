@@ -3,8 +3,8 @@ package hackterm
 import (
 	"strings"
 
-	m "github.com/godwhoa/oodle/middleware"
-	"github.com/godwhoa/oodle/oodle"
+	m "github.com/oodnet/oodle/middleware"
+	"github.com/oodnet/oodle/oodle"
 )
 
 func Register(deps *oodle.Deps) error {

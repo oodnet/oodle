@@ -23,7 +23,7 @@ type Release struct {
 // Fetches release info from github api
 func fetchRelease() (*Release, error) {
 	release := &Release{}
-	resp, err := http.Get("https://api.github.com/repos/godwhoa/oodle/releases/latest")
+	resp, err := http.Get("https://api.github.com/repos/oodnet/oodle/releases/latest")
 	if err != nil {
 		return release, fmt.Errorf("Failed to github api: %v", err)
 	}

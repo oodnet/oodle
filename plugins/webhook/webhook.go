@@ -5,8 +5,8 @@ import (
 	"html"
 	"net/http"
 
-	"github.com/godwhoa/oodle/oodle"
 	"github.com/lrstanley/girc"
+	"github.com/oodnet/oodle/oodle"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -31,7 +31,7 @@ type webhook struct {
 	irc    oodle.Sender
 	log    *logrus.Logger
 	secret string
-	// godwhoa/oodle => ["master", "dev", ...]
+	// oodnet/oodle => ["master", "dev", ...]
 	watch map[string][]string
 }
 

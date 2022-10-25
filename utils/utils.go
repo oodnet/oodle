@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/godwhoa/oodle/oodle"
 	"github.com/hako/durafmt"
+	"github.com/oodnet/oodle/oodle"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/neurosnap/sentences.v1/english"
 )

@@ -1,6 +1,6 @@
 # oodle
 
-[![Build Status](https://travis-ci.org/godwhoa/oodle.svg?branch=master)](https://travis-ci.org/godwhoa/oodle)
+[![Build Status](https://travis-ci.org/oodnet/oodle.svg?branch=master)](https://travis-ci.org/oodnet/oodle)
 
 > **oodle** is a simple irc bot for oodnet. It is also a rewrite of ezbot framework 
 
@@ -25,7 +25,7 @@
 ```bash
 # Download latest build
 # Note: remove -v from grep if you are on ARM
-curl -s https://api.github.com/repos/godwhoa/oodle/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep -v arm | xargs -L 1 wget -O oodle
+curl -s https://api.github.com/repos/oodnet/oodle/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep -v arm | xargs -L 1 wget -O oodle
 # Edit config
 vim config.toml
 # Make it executable

@@ -3,9 +3,9 @@ package bot
 import (
 	"strings"
 
-	"github.com/godwhoa/oodle/events"
-	"github.com/godwhoa/oodle/oodle"
 	"github.com/lrstanley/girc"
+	"github.com/oodnet/oodle/events"
+	"github.com/oodnet/oodle/oodle"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

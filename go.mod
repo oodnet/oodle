@@ -1,4 +1,4 @@
-module github.com/godwhoa/oodle
+module github.com/oodnet/oodle
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect

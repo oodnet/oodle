@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	u "github.com/godwhoa/oodle/utils"
+	u "github.com/oodnet/oodle/utils"
 )
 
 const endpoint = "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search="

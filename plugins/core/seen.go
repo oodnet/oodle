@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/godwhoa/oodle/events"
-	m "github.com/godwhoa/oodle/middleware"
-	"github.com/godwhoa/oodle/oodle"
-	u "github.com/godwhoa/oodle/utils"
 	"github.com/jmoiron/sqlx"
 	"github.com/lrstanley/girc"
+	"github.com/oodnet/oodle/events"
+	m "github.com/oodnet/oodle/middleware"
+	"github.com/oodnet/oodle/oodle"
+	u "github.com/oodnet/oodle/utils"
 )
 
 // Seen tells you when it last saw someone

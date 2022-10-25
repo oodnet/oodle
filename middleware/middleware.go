@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/godwhoa/oodle/oodle"
+	"github.com/oodnet/oodle/oodle"
 )
 
 type Middleware func(oodle.Command) oodle.Command

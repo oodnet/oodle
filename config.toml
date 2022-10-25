@@ -4,7 +4,7 @@ name = "oodle-dev"
 user = "oodle-dev"
 sasl_user = ""
 sasl_pass = ""
-server = "chat.freenode.net"
+server = "irc.libera.chat"
 port = 6667
 channel = "##oodle-test"
 # Retry if connection drops; has exp. backoff
@@ -14,14 +14,14 @@ dbpath = "store.sqlite"
 # Webhook
 # secret = "7570abf6d5619dd0f9668551845ffe02a082fddf4a097306dae9b05ad6a2" # OFC change this
 # webhook_addr = "127.0.0.1:8000"
-
+godwhoa/oodle
 # For github notifications
 # First make oodle's webhook publicly available and set it's secret
 # head over to https://github.com/{username/repo}/settings/hooks
 # set "Payload URL" to {webhook_addr}/github, "secret" to {secret}, "Content type" to "application/json"
 # then select "push" and "release" events from "Let me select individual events"
 # [github]
-# "godwhoa/oodle" = ["master"]
+# "oodnet/oodle" = ["master"]
 
 
 url_blacklist = [

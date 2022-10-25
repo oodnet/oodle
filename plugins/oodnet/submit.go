@@ -4,9 +4,9 @@ import (
 	"net/url"
 	"strings"
 
-	m "github.com/godwhoa/oodle/middleware"
-	"github.com/godwhoa/oodle/oodle"
-	u "github.com/godwhoa/oodle/utils"
+	m "github.com/oodnet/oodle/middleware"
+	"github.com/oodnet/oodle/oodle"
+	u "github.com/oodnet/oodle/utils"
 	"github.com/spf13/viper"
 )
 

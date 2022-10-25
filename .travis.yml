@@ -16,7 +16,7 @@ cache:
 script:
   - COMMIT=`git rev-parse HEAD`
   - VERSION=`git describe --abbrev=0 --tags`
-  - VAR="-X github.com/godwhoa/oodle/oodle.Commit=${COMMIT} -X github.com/godwhoa/oodle/oodle.Version=${VERSION}"
+  - VAR="-X github.com/oodnet/oodle/oodle.Commit=${COMMIT} -X github.com/oodnet/oodle/oodle.Version=${VERSION}"
   - echo $VAR
   - GOOS=linux go build -o oodle_linux -a -tags netgo -ldflags "$VAR -s -w -extldflags -static"
   - GOOS=linux GOARCH=arm GOARM=7 CC=arm-linux-gnueabihf-gcc-8 CGO_ENABLED=1 go build -o oodle_linux_armv7 -a -tags netgo -ldflags "$VAR -s -w -linkmode external -extldflags -static"

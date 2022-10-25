@@ -8,10 +8,10 @@ import (
 
 	"strings"
 
-	"github.com/godwhoa/oodle/events"
-	"github.com/godwhoa/oodle/oodle"
-	u "github.com/godwhoa/oodle/utils"
 	"github.com/lrstanley/girc"
+	"github.com/oodnet/oodle/events"
+	"github.com/oodnet/oodle/oodle"
+	u "github.com/oodnet/oodle/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

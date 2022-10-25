@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	u "github.com/godwhoa/oodle/utils"
+	u "github.com/oodnet/oodle/utils"
 )
 
 type definition struct {

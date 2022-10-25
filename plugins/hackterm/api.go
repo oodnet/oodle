@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	u "github.com/godwhoa/oodle/utils"
+	u "github.com/oodnet/oodle/utils"
 )
 
 var (
