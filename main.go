@@ -7,6 +7,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	flag "github.com/ogier/pflag"
 	"github.com/oodnet/oodle/bot"
+	"github.com/oodnet/oodle/discord"
 	"github.com/oodnet/oodle/irc"
 	"github.com/oodnet/oodle/oodle"
 	"github.com/oodnet/oodle/plugins/core"
@@ -79,6 +80,7 @@ func main() {
 		webhook.Register(deps),
 		oodnet.Register(deps),
 		lazy.Register(deps),
+		discord.Register(deps),
 	); err != nil {
 		logger.Fatal(err)
 	}
