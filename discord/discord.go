@@ -57,7 +57,6 @@ func OnMessage(sender oodle.Sender, check oodle.Checker, url string, discord *Di
 		discord.store.Users()
 
 		if !IsOptedIn(nick) {
-			sender.Sendf("You haven't opted in!")
 			return
 		}
 
